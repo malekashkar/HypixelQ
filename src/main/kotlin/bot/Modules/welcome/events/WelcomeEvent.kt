@@ -12,19 +12,17 @@ class WelcomeEvent: Event() {
     @Handler
     fun onGuildMemberJoin(event: GuildMemberJoinEvent) {
         val welcomeChannel = event.guild.getTextChannelById(Config.Channels.welcomeChannel)
-        if(welcomeChannel !== null) {
-            welcomeChannel.sendMessage(
-                Message(
-                    "Welcome to the **${event.guild.name}** discord, ${event.member.asMention} (**${event.guild.memberCount}th** member).",
-                    EmbedTemplates
-                        .normal(
-                            "A place where you can queue up with other competitive driven Bedwars players",
-                            "Welcome to ${event.guild.name}, **${event.member.user.name}**"
-                        )
-                        .setThumbnail(event.member.user.avatarUrl)
-                        .build()
-                )
-            ).queue()
-        }
+        welcomeChannel?.sendMessage(
+            Message(
+                "Welcome to the **${event.guild.name}** discord, ${event.member.asMention} (**${event.guild.memberCount}th** member).",
+                EmbedTemplates
+                    .normal(
+                        "A place where you can queue up with other competitive driven Bedwars players",
+                        "Welcome to ${event.guild.name}, **${event.member.user.name}**"
+                    )
+                    .setThumbnail(event.member.user.avatarUrl)
+                    .build()
+            )
+        )?.queue()
     }
 }

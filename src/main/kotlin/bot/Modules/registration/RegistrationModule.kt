@@ -4,20 +4,25 @@ import bot.Bot
 import bot.Core.structures.base.Module
 import bot.Modules.registration.commands.ForceRegisterCommand
 import bot.Modules.registration.commands.RegisterCommand
+import bot.Modules.registration.commands.UpdateCommand
 import bot.Modules.registration.events.RegisterEvent
+import bot.Modules.registration.tasks.UpdateUsersTask
 import net.dv8tion.jda.api.requests.GatewayIntent
 import java.util.*
 
-class VerificationModule(bot: Bot) : Module(
+class RegistrationModule(bot: Bot) : Module(
     bot,
     arrayOf(
         RegisterCommand(),
-        ForceRegisterCommand()
+        ForceRegisterCommand(),
+        UpdateCommand()
     ),
     arrayOf(
         RegisterEvent()
     ),
-    arrayOf(),
+    arrayOf(
+        UpdateUsersTask()
+    ),
     arrayOf(
         GatewayIntent.GUILD_MEMBERS
     )

@@ -20,12 +20,25 @@ class UserRepository(
         }
     }
 
-    suspend fun getUser(jdaUser: JDAUser) : User {
-        var user = collection.findOneById(jdaUser.id)
+    suspend fun getUser(
+        discordId: String? = null,
+        mojangUuid: String? = null
+    ) : User {
+        var user = if(mojangUuid != null) {
+            collection.findOne(User::uuid eq mojangUuid)
+        } else {
+            collection.findOne(User::id eq discordId)
+        }
         if(user == null) {
-            user = User(jdaUser.id, _isNew = true)
+            user = User(discordId, mojangUuid, hypixelData = HypixelData(), _isNew = true)
         }
         return user
+    }
+
+    suspend fun updateId(userData: User, id: String) {
+        userData.id = id
+        collection.updateOne(User::id eq userData.id, set(User::id setTo id))
+        ensureSaved(userData)
     }
 
     suspend fun updateUuid(userData: User, uuid: String) {
@@ -34,10 +47,28 @@ class UserRepository(
         ensureSaved(userData)
     }
 
-    suspend fun updateStats(userData: User, fkdr: Int?, winstreak: Int?, bedwarsLevel: Int?) {
-        val hypixelData = HypixelData(fkdr, winstreak, bedwarsLevel)
-        userData.hypixelData = hypixelData
-        collection.updateOne(User::id eq userData.id, set(User::hypixelData setTo hypixelData))
+    suspend fun updateStats(userData: User, data: HypixelData) {
+        userData.hypixelData = data
+        userData.lastUpdated = System.currentTimeMillis()
+        collection.updateOne(
+            User::id eq userData.id,
+            set(
+                User::hypixelData setTo data,
+                User::lastUpdated setTo System.currentTimeMillis()
+            )
+        )
+        ensureSaved(userData)
+    }
+
+    suspend fun addToIgnoredList(userData: User, ignoreUuid: String) {
+        userData.ignoredList.add(ignoreUuid)
+        collection.updateOne(User::id eq userData.id, set(User::ignoredList setTo userData.ignoredList))
+        ensureSaved(userData)
+    }
+
+    suspend fun removeFromIgnoreList(userData: User, ignoreUuid: String) {
+        userData.ignoredList.remove(ignoreUuid)
+        collection.updateOne(User::id eq userData.id, set(User::ignoredList setTo userData.ignoredList))
         ensureSaved(userData)
     }
 }

@@ -135,7 +135,6 @@ private fun main() {
       }
     }
   }
-  println(json)
 
   val array = jsonArray(4) {
     string("top-level")
@@ -152,6 +151,4 @@ private fun main() {
       boolean(null)
     }
   }
-
-  println(array)
 }

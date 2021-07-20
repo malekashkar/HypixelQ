@@ -1,0 +1,94 @@
+package bot.Modules.game.commands
+
+import bot.Bot
+import bot.Core.database.models.*
+import bot.Core.structures.EmbedTemplates
+import bot.Core.structures.base.Command
+import bot.Modules.game.Game
+import bot.api.ICommandContext
+import bot.utils.Config
+import dev.minn.jda.ktx.await
+
+class QueueCommand: Command() {
+    override val name = "queue"
+    override val description = "Queue up to join any available games."
+
+    @Executor
+    suspend fun execute(
+        context: ICommandContext,
+        @Argument(optional = false) mode: String?
+    ) {
+        if(context.channel.id == Config.Channels.queueCommandsChannel) {
+            val member = context.guild?.retrieveMemberById(context.author.id)?.await()
+            if(member?.voiceState?.channel?.id == Config.Channels.queueRoomChannel) {
+                var gameType: GameType? = null
+                if(mode != null) {
+                    when {
+                        mode.contains("duo|two".toRegex()) -> gameType = GameType.DUOS
+                        mode.contains("trio|three".toRegex()) -> gameType = GameType.TRIOS
+                        mode.contains("squad|quad|four".toRegex()) -> gameType = GameType.FOURS
+                    }
+                }
+
+                if(gameType != null) {
+                    val alreadyQueued = Bot.database.queueRepository.findQueue(context.author.id, null)
+                    if(alreadyQueued == null) {
+                        val searchFilter = HypixelData()
+                        val userData = Bot.database.userRepository.getUser(context.author.id)
+                        if(userData.uuid != null) {
+                            val queuePlayers = Bot.database.queueRepository.searchForPlayers(userData, searchFilter, gameType)
+                            if(queuePlayers != null) {
+                                Game.createGame(
+                                    context.guild!!,
+                                    queuePlayers,
+                                )
+                            } else {
+                                context.reply(
+                                    EmbedTemplates
+                                        .error("We were unable to find a game instantly, you have been added to the queue!")
+                                        .build()
+                                ).queue()
+
+                                Bot.database.queueRepository.createQueue(
+                                    member.id,
+                                    userData.uuid!!,
+                                    userData.hypixelData,
+                                    searchFilter,
+                                    userData.ignoredList,
+                                    gameType
+                                )
+                            }
+                        }
+                    } else {
+                        context.reply(
+                            EmbedTemplates
+                                .error("You already created a queue, please be patient!")
+                                .build()
+                        ).queue()
+                    }
+                } else {
+                    context.reply(
+                        EmbedTemplates
+                            .error("Please provide one of the following modes: `duo/trio/fours`.")
+                            .build()
+                    ).queue()
+                }
+            } else {
+                val queueRoomChannel = context.guild?.getVoiceChannelById(Config.Channels.queueRoomChannel)
+                if(queueRoomChannel != null) {
+                    context.reply(
+                        EmbedTemplates
+                            .error("Please join the **${queueRoomChannel.name}** channel in order to queue!")
+                            .build()
+                    ).queue()
+                } else {
+                    context.reply(
+                        EmbedTemplates
+                            .error("The queue voice channel seems to be deleted, please notify an administrator!")
+                            .build()
+                    ).queue()
+                }
+            }
+        }
+    }
+}

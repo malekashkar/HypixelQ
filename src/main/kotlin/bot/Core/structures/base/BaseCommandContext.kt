@@ -19,14 +19,12 @@ abstract class BaseCommandContext(override val bot: Bot) : ICommandContext {
 
   override fun shouldProcess(): Boolean {
     if (author.isBot) return false
-    return Config.devs.contains(author.id) || (if (Config.officialServerOnlyMode) isFromGuild && Config.officialServers.contains(
-      guild!!.id
-    ) else true)
+    return Config.devs.contains(author.id) || (if (Config.officialServerOnlyMode) isFromGuild && guild!!.id == Config.mainServer else true)
   }
 
   override suspend fun getUserData(forceFetch: Boolean): User {
     if (userData == null || forceFetch) {
-      userData = bot.database.userRepository.getUser(author)
+      userData = bot.database.userRepository.getUser(author.id)
     }
     return userData!!
   }

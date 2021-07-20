@@ -1,6 +1,8 @@
 package bot.Core.structures.base
 
 import bot.Bot
+import bot.Core.structures.MessageCommandContext
+import bot.utils.extensions.isMessageCommandContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
@@ -9,15 +11,10 @@ import net.dv8tion.jda.api.events.ReadyEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.api.requests.GatewayIntent
-import bot.Core.structures.MessageCommandContext
-import bot.utils.extensions.isMessageCommandContext
 import java.util.concurrent.Executors
+import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
-import kotlin.reflect.full.callSuspend
-import kotlin.reflect.full.findAnnotation
-import kotlin.reflect.full.hasAnnotation
-import kotlin.reflect.full.memberFunctions
-import kotlin.reflect.jvm.javaType
+import kotlin.reflect.full.*
 
 @Suppress("UNUSED", "COULD_BE_PRIVATE")
 abstract class Module(
@@ -101,8 +98,9 @@ abstract class Module(
         ev.javaClass.kotlin.memberFunctions.filter { it.annotations.any { annotation -> annotation is Event.Handler } }
       for (handlerFunction in handlerFunctions) {
         val firstParam = handlerFunction.parameters.find { it.kind != KParameter.Kind.INSTANCE } ?: return
+
         try {
-          if (firstParam.type.javaType == event::class.java) {
+          if ((firstParam.type.classifier as? KClass<*>)!!.isSuperclassOf(event::class)) {
             if (handlerFunction.isSuspend) {
               coroutineScope.launch {
                 handlerFunction.callSuspend(ev, event)

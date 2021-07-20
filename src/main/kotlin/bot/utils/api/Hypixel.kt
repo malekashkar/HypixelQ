@@ -1,6 +1,8 @@
 package bot.utils.api
 
 import bot.Bot
+import bot.Core.database.models.HypixelData
+import bot.utils.Config
 import bot.utils.Json
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -23,23 +25,35 @@ object Hypixel {
         Player("/player"),
     }
 
+    enum class Ranks(val roleId: String?) {
+        NONE(null),
+        VIP(Config.Roles.vipRole),
+        VIP_PLUS(Config.Roles.vipPlusRole),
+        MVP(Config.Roles.mvpRole),
+        MVP_PLUS(Config.Roles.mvpPlusRole),
+        MVP_PLUS_PLUS(Config.Roles.mvpPlusPlusRole)
+    }
+
     data class HypixelPlayerInfo(
         val uuid: String,
         val name: String? = null,
-        val bedwarsLevel: Int? = null,
-        val winstreak: Int? = null,
-        val fkdr: Int? = null,
-        val discordTag: String? = null
+        val statsData: HypixelData,
+        val discordTag: String? = null,
+        val rank: String? = null
     )
 
     private const val root = "https://api.hypixel.net"
 
-    private fun getFKDR(finalKills: Int, finalDeaths: Int): Int {
-        return (round((finalKills / finalDeaths).toFloat() * 100) / 100).toInt()
+    private fun getFKDR(finalKills: Int, finalDeaths: Int): Double {
+        return if(finalDeaths == 0) {
+            finalKills.toDouble()
+        } else {
+            round(finalKills.toDouble() / finalDeaths.toDouble() * 100) / 100
+        }
     }
 
     private fun getLevelForExp(exp: Int): Int {
-        val prestiges = floor(exp.toDouble() / XP_PER_PRESTIGE) // floor this from other script
+        val prestiges = floor(exp.toDouble() / XP_PER_PRESTIGE)
         var level = prestiges * LEVELS_PER_PRESTIGE
 
         var expWithoutPrestiges = exp - (prestiges * XP_PER_PRESTIGE)
@@ -79,6 +93,17 @@ object Hypixel {
         return if(level > HIGHEST_PRESTIGE * LEVELS_PER_PRESTIGE) level - HIGHEST_PRESTIGE * LEVELS_PER_PRESTIGE else level % LEVELS_PER_PRESTIGE
     }
 
+    fun getRankClass(rank: String): Ranks {
+        return when(rank) {
+            "MVP_PLUS_PLUS" -> Ranks.MVP_PLUS_PLUS
+            "MVP_PLUS" -> Ranks.MVP_PLUS
+            "MVP" -> Ranks.MVP
+            "VIP_PLUS" -> Ranks.VIP_PLUS
+            "VIP" -> Ranks.VIP
+            else -> Ranks.NONE
+        }
+    }
+
     suspend fun getPlayerData(uuid: String): HypixelPlayerInfo? {
         val httpResponse = Bot.ktorClient.get<HttpResponse>("$root${Endpoint.Player.path}") {
             header("API-Key", System.getenv("HYPIXEL_TOKEN"))
@@ -92,40 +117,47 @@ object Hypixel {
 
             val hypixelPlayer = json["player"]
 
-            val playerDisplayName = (hypixelPlayer!!.jsonObject["displayname"] as JsonPrimitive).content
+            val playerDisplayName = (hypixelPlayer!!.jsonObject["displayname"] as? JsonPrimitive)?.content
 
             var finalKills = 0
             var finalDeaths = 0
             var winstreak = 0
             var bedwarsExperience = 0
+
             val playerStats = hypixelPlayer.jsonObject["stats"]
-            if(playerStats !== null) {
+            if(playerStats != null) {
                 val bedwarsStats = playerStats.jsonObject["Bedwars"]
-                if(bedwarsStats !== null) {
-                    finalKills = (bedwarsStats.jsonObject["final_kills_bedwars"] as JsonPrimitive).content.toIntOrNull() ?: 0
-                    finalDeaths = (bedwarsStats.jsonObject["final_deaths_bedwars"] as JsonPrimitive).content.toIntOrNull() ?: 0
-                    winstreak = (bedwarsStats.jsonObject["winstreak"] as JsonPrimitive).content.toIntOrNull() ?: 0
-                    bedwarsExperience = (bedwarsStats.jsonObject["Experience"] as JsonPrimitive).content.toIntOrNull() ?: 0
+                if(bedwarsStats != null) {
+                    finalKills = (bedwarsStats.jsonObject["final_kills_bedwars"] as? JsonPrimitive)?.content?.toIntOrNull() ?: 0
+                    finalDeaths = (bedwarsStats.jsonObject["final_deaths_bedwars"] as? JsonPrimitive)?.content?.toIntOrNull() ?: 0
+                    winstreak = (bedwarsStats.jsonObject["winstreak"] as? JsonPrimitive)?.content?.toIntOrNull() ?: 0
+                    bedwarsExperience = (bedwarsStats.jsonObject["Experience"] as? JsonPrimitive)?.content?.toIntOrNull() ?: 0
                 }
             }
-
 
             var discord: String? = null
             val playerSocialMedia = hypixelPlayer.jsonObject["socialMedia"]
-            if(playerSocialMedia !== null) {
+            if(playerSocialMedia != null) {
                 val socialMediaLinks = playerSocialMedia.jsonObject["links"]
-                if(socialMediaLinks !== null) {
-                    discord = (socialMediaLinks.jsonObject["DISCORD"] as JsonPrimitive).content
+                if(socialMediaLinks != null) {
+                    discord = (socialMediaLinks.jsonObject["DISCORD"] as? JsonPrimitive)?.content
                 }
             }
+
+            val rank = (hypixelPlayer.jsonObject["newPackageRank"] as? JsonPrimitive)?.content
 
             return HypixelPlayerInfo(
                 uuid,
                 playerDisplayName,
-                getLevelForExp(bedwarsExperience),
-                winstreak,
-                getFKDR(finalKills, finalDeaths),
-                discord
+                HypixelData(
+                    getFKDR(finalKills, finalDeaths),
+                    winstreak,
+                    getLevelForExp(bedwarsExperience),
+                    playerDisplayName,
+                    rank
+                ),
+                discord,
+                rank
             )
         }
         return null

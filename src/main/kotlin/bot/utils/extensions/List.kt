@@ -9,7 +9,6 @@ fun <T> List<T>.randomChoice(
 
     for (index in 0 until this.size - 1) {
       r -= weights[index]
-//      println(r)
       if (r <= 0.0) return this[index]
     }
   }

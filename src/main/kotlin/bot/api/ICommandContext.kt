@@ -6,6 +6,7 @@ import bot.Core.structures.base.Command
 import bot.Core.structures.base.Event
 import bot.Core.structures.base.Module
 import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.GenericEvent

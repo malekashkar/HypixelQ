@@ -3,20 +3,15 @@ package bot.Core.database.models
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class HypixelData(
-    var fkdr: Int? = null,
-    var winstreak: Int? = null,
-    var bedwarsLevel: Int? = null,
-)
-
-@Serializable
 data class Queue (
+    val id: String,
     val uuid: String,
+    val gameType: GameType,
 
     val hypixelData: HypixelData,
 
     val filter: HypixelData? = null,
-    val ignoredList: List<String>,
+    val ignoredList: List<String>? = arrayListOf(),
 
     var _isNew: Boolean = false
 )

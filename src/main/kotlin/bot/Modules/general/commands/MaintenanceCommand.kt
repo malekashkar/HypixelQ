@@ -4,9 +4,13 @@ import bot.Bot
 import bot.Core.structures.EmbedTemplates
 import bot.Core.structures.base.Command
 import bot.api.ICommandContext
+import net.dv8tion.jda.api.Permission
 
 class MaintenanceCommand : Command() {
     override val name = "maintenance"
+    override val description = "Put the discord bot under maintenance mode."
+
+    override var requiredUserPermissions = arrayOf(Permission.MANAGE_SERVER)
 
     @Executor
     fun execute(

@@ -28,23 +28,18 @@ abstract class Command {
   annotation class ChildCommand
 
   abstract val name: String
+  abstract val description: String
 
   lateinit var module: Module
-  var parentCommand: Command? = null
 
+  var parentCommand: Command? = null
   open var aliases: Array<String> = arrayOf()
   open var enabled = true
   open var excludeFromHelp = false
   open var requiredClientPermissions: Array<Permission> =
     arrayOf(Permission.MESSAGE_WRITE, Permission.MESSAGE_EMBED_LINKS)
-  open var requiredUserPermissions: Array<Permission> = arrayOf(Permission.MESSAGE_READ)
 
-  open val descriptionI18nKey by lazy {
-    val key =
-      if (parentCommand != null) "${module.name}.${parentCommand!!.name}.${name}"
-      else "${module.name}.${name}"
-    "misc.command_descriptions.${key.removeAccents()}"
-  }
+  open var requiredUserPermissions: Array<Permission> = arrayOf(Permission.MESSAGE_READ)
 
   open val usage: String by lazy {
     this::class.memberFunctions.forEach { function ->

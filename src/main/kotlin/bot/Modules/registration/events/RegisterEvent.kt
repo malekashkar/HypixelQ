@@ -17,7 +17,7 @@ class RegisterEvent : Event() {
         if(event.member.user.isBot) return
 
         val registerChannel = event.guild.getTextChannelById(Config.Channels.registrationChannel)
-        if(registerChannel !== null) {
+        if(registerChannel != null) {
             registerChannel.sendMessage(
                 Message(
                     event.member.asMention,

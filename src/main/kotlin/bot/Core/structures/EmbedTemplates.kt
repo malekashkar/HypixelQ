@@ -14,7 +14,7 @@ object EmbedTemplates {
   fun error(description: String, title: String? = null): EmbedBuilder {
     val embedTitle = title ?: "Something went wrong..."
     return EmbedBuilder().setColor(Color.RED.code).setTitle(embedTitle).setDescription(description)
-      .setFooter("Not sure what to do? Try joining our support server.")
+      .setFooter("Not sure what to do? Try contacting an administrator.")
   }
 
   fun normal(description: String, title: String? = null): EmbedBuilder {

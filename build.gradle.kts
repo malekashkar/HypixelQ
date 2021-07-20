@@ -7,6 +7,7 @@ plugins {
 group = "com.bedwarsq"
 version = "1.0-SNAPSHOT"
 
+val logbackVersion = "1.2.3"
 val kmongoVersion = "4.2.4"
 val jdaVersion = "4.3.0_295"
 val jdaKtxVersion = "985db81"
@@ -23,8 +24,11 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
+    implementation(kotlin("reflect"))
 
     implementation("com.github.minndevelopment:jda-ktx:${jdaKtxVersion}")
+
+    implementation("ch.qos.logback:logback-classic:$logbackVersion")
 
     implementation("net.dv8tion:JDA:$jdaVersion") {
         exclude(module = "opus-java")

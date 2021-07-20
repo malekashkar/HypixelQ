@@ -8,11 +8,19 @@ import bot.utils.Config
 import bot.utils.api.Hypixel
 import bot.utils.api.Mojang
 import dev.minn.jda.ktx.await
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.User
 import java.util.*
 
 class ForceRegisterCommand: Command() {
-    override val name = "forgeregister"
+    override val name = "forceregister"
+    override val description = "Register a discord user for them."
+    override var aliases = arrayOf(
+        "fregister",
+        "fr"
+    )
+
+    override var requiredUserPermissions = arrayOf(Permission.MANAGE_SERVER)
 
     @Executor
     suspend fun execute(
@@ -21,10 +29,10 @@ class ForceRegisterCommand: Command() {
         @Argument(optional = true) username: String?
     ) {
         if(user != null) {
-            if(username != null) {
+            if(username != null && username.trim() != "") {
                 val mojangProfile = Mojang.getMojangProfile(username)
                 if(mojangProfile != null) {
-                    val userData = Bot.database.userRepository.getUser(user)
+                    val userData = Bot.database.userRepository.getUser(user.id)
                     if(userData.uuid == mojangProfile.id) {
                         context.reply(
                             EmbedTemplates
@@ -40,38 +48,18 @@ class ForceRegisterCommand: Command() {
                             playerData.discordTag != null &&
                             playerData.discordTag.lowercase() == user.asTag.lowercase()
                         ) {
-                            val guildMember = context.guild?.retrieveMember(user)?.await()
-                            if(guildMember != null) {
-                                val memberRole = context.guild?.getRoleById(Config.Roles.registeredRole)
-                                if(memberRole != null) {
-                                    context.guild?.addRoleToMember(guildMember, memberRole)?.queue()
-                                    if(context.guild?.selfMember!!.canInteract(guildMember)) {
-                                        guildMember.modifyNickname("[${playerData.bedwarsLevel} \uD83C\uDF1F] $username").queue()
-                                    }
-                                    Bot.database.userRepository.updateUuid(userData, mojangProfile.id)
-                                    Bot.database.userRepository.updateStats(
-                                        userData,
-                                        playerData.fkdr,
-                                        playerData.winstreak,
-                                        playerData.bedwarsLevel,
+                            userData.uuid = playerData.uuid
+                            userData.hypixelData = playerData.statsData
+                            bot.Modules.registration.User.updateUser(context.guild!!, userData)
+                            context.reply(
+                                EmbedTemplates
+                                    .normal(
+                                        "You have force linked ${user.asMention}'s Hypixel account successfully.",
+                                        "Linked $username"
                                     )
-                                    context.reply(
-                                        EmbedTemplates
-                                            .normal(
-                                                "You have force linked ${user.asMention}'s Hypixel account successfully.",
-                                                "Linked $username"
-                                            )
-                                            .setAuthor("",user.avatarUrl)
-                                            .build()
-                                    ).queue()
-                                } else {
-                                    context.reply(
-                                        EmbedTemplates
-                                            .error("The member role has been deleted, please notify an administrator!")
-                                            .build()
-                                    ).queue()
-                                }
-                            }
+                                    .setAuthor("",user.avatarUrl)
+                                    .build()
+                            ).queue()
                         } else {
                             context.reply(
                                 EmbedTemplates
@@ -95,10 +83,17 @@ class ForceRegisterCommand: Command() {
                 }
             } else {
                 context.reply(
-                    EmbedTemplates.error("Please provide a username to register with!").build()
+                    EmbedTemplates
+                        .error("Please provide the username you would like to force register!")
+                        .build()
                 ).queue()
             }
+        } else {
+            context.reply(
+                EmbedTemplates
+                    .error("Please tag the user you would like to force register!")
+                    .build()
+            ).queue()
         }
     }
-
 }

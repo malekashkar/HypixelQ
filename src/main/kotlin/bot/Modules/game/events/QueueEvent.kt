@@ -1,4 +1,4 @@
-package bot.Modules.queue.events
+package bot.Modules.game.events
 
 import bot.Core.structures.EmbedTemplates
 import bot.Core.structures.base.Event
@@ -15,19 +15,17 @@ class QueueEvent: Event() {
 
         if(event.channelJoined.id == Config.Channels.queueRoomChannel) {
             val queueCommandsChannel = event.guild.getTextChannelById(Config.Channels.queueCommandsChannel)
-            if(queueCommandsChannel !== null) {
-                queueCommandsChannel.sendMessage(
-                    Message(
-                        event.member.asMention,
-                        EmbedTemplates
-                            .normal(
-                                "Run the command `${Config.prefix}queue` to get started!",
-                                "Queue Notification"
-                            )
-                            .build()
-                    )
-                ).queue()
-            }
+            queueCommandsChannel?.sendMessage(
+                Message(
+                    event.member.asMention,
+                    EmbedTemplates
+                        .normal(
+                            "Run the command `${Config.prefix}queue` to get started!",
+                            "Queue Notification"
+                        )
+                        .build()
+                )
+            )?.queue()
         }
     }
 }

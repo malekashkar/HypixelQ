@@ -15,13 +15,15 @@ import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.requests.GatewayIntent
 import bot.Core.structures.base.Module
 import bot.Core.structures.base.ParentCommand
+import bot.Modules.game.GameModule
 import bot.Modules.general.GeneralModule
-import bot.Modules.queue.QueueModule
-import bot.Modules.registration.VerificationModule
+import bot.Modules.registration.RegistrationModule
+import bot.Modules.tickets.TicketModule
 import bot.Modules.welcome.WelcomeModule
 import io.ktor.client.*
 import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
+import net.dv8tion.jda.api.entities.Guild
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.memberFunctions
@@ -59,14 +61,14 @@ object Bot {
                         GatewayIntent.DIRECT_MESSAGE_REACTIONS,
                         GatewayIntent.GUILD_MESSAGES,
                         GatewayIntent.GUILD_MESSAGE_REACTIONS,
-                        GatewayIntent.GUILD_VOICE_STATES
                 )
 
                 val botModules = listOf(
                         GeneralModule(this),
-                        VerificationModule(this),
+                        RegistrationModule(this),
                         WelcomeModule(this),
-                        QueueModule(this)
+                        GameModule(this),
+                        TicketModule(this)
                 )
                 botModules.forEach {
                         modules[it.name.lowercase()] = it
@@ -92,19 +94,14 @@ object Bot {
 
         }
 
-        private fun getModuleHelpEmbedLine(
-                context: ICommandContext,
-                prefix: String,
-                command: Command
-        ): String {
-                val name =
-                        (if (command.parentCommand != null) "${command.parentCommand!!.name} ${command.name}" else command.name).lowercase()
-                val commandDescription = getCommandDescription(command)
-                return "**${prefix}${name}**${if (command.usage.isEmpty()) "" else " `${command.usage}` "}${if (commandDescription.isEmpty()) "" else " - $commandDescription "}"
+        fun getMainGuild(): Guild? {
+                return jda.getGuildById(Config.mainServer)
         }
 
-        private fun getCommandDescription(command: Command): String {
-                return command.descriptionI18nKey
+        private fun getModuleHelpEmbedLine(prefix: String, command: Command): String {
+                val name =
+                        (if (command.parentCommand != null) "${command.parentCommand!!.name} ${command.name}" else command.name).lowercase()
+                return "**${prefix}${name}**${if (command.usage.isEmpty()) "" else " `${command.usage}` "}${if (command.description.isEmpty()) "" else " - ${command.description} "}"
         }
 
         fun getHelpEmbed(context: ICommandContext, module: Module, prefix: String = "p!"): EmbedBuilder? {
@@ -117,11 +114,11 @@ object Bot {
                                 command.childCommands.forEach { childClass ->
                                         val childCommand = module.commands.find { it::class == childClass }
                                         if (childCommand != null) {
-                                                if (!childCommand.excludeFromHelp) commandEntries.add(getModuleHelpEmbedLine(context, prefix, childCommand))
+                                                if (!childCommand.excludeFromHelp) commandEntries.add(getModuleHelpEmbedLine(prefix, childCommand))
                                         }
                                 }
                         }
-                        if (!command.excludeFromHelp) commandEntries.add(getModuleHelpEmbedLine(context, prefix, command))
+                        if (!command.excludeFromHelp) commandEntries.add(getModuleHelpEmbedLine(prefix, command))
                 }
                 if (commandEntries.isNotEmpty()) {
                         return EmbedTemplates.normal(
@@ -135,9 +132,8 @@ object Bot {
         fun getHelpEmbed(context: ICommandContext, command: Command): EmbedBuilder? {
                 if (!command.enabled || command.excludeFromHelp || !command.canRun(context)) return null
                 val descriptionLines = arrayListOf<String>()
-                val commandDescription = getCommandDescription(command)
-                if (commandDescription.isNotEmpty()) {
-                        descriptionLines.add("${commandDescription}\n")
+                if (command.description.isNotEmpty()) {
+                        descriptionLines.add("${command.description}\n")
                 }
                 if (command.usage.isNotEmpty()) {
                         descriptionLines.add("**Usage**: `${command.usage}`\n")
@@ -174,12 +170,5 @@ object Bot {
 
         fun getHelpEmbeds(context: ICommandContext, commands: List<Command>): List<EmbedBuilder> {
                 return commands.mapNotNull { getHelpEmbed(context, it) }
-        }
-
-        fun shutdown() {
-                database.close()
-                if (this::jda.isInitialized) {
-                        jda.shutdown()
-                }
         }
 }
