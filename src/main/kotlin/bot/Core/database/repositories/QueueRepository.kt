@@ -65,8 +65,8 @@ class QueueRepository(
         val result = collection.aggregate<Queue>(
             SearchQueueOptions(playerData, filter).pipeline.toList()
         )
-        return if(result.toList().size >= gameType.size.toInt()) {
-            result.toList().slice(1..gameType.size.toInt()).map { Player(it.id, it.uuid) }
+        return if(result.toList().size >= gameType.size) {
+            result.toList().slice(1..gameType.size).map { Player(it.id, it.uuid) }
         } else {
             null
         }

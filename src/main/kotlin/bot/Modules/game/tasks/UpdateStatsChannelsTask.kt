@@ -9,7 +9,7 @@ class UpdateStatsChannelsTask: Task() {
     override val name = "UpdateStatsChannels"
 
     override suspend fun execute() {
-        val guild = Bot.jda.getGuildById(Config.mainServer)
+        val guild = Bot.getMainGuild()
         if(guild != null) {
             val totalGameStatsChannel = guild.getVoiceChannelById(Config.Channels.totalGameStats)
             if(totalGameStatsChannel != null) {
@@ -17,7 +17,7 @@ class UpdateStatsChannelsTask: Task() {
                 totalGameStatsChannel.manager.setName("\uD83D\uDC65 Total: $totalGames").queue()
             }
 
-            val inQueueGameStatsChannel = guild.getVoiceChannelById(Config.Channels.inProgressGameStats)
+            val inQueueGameStatsChannel = guild.getVoiceChannelById(Config.Channels.inQueueGameStats)
             if(inQueueGameStatsChannel != null) {
                 val inQueueGames = Bot.database.queueCollection.countDocuments()
                 inQueueGameStatsChannel.manager.setName("⌛ In-Queue: $inQueueGames").queue()

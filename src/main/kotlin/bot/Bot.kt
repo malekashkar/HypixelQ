@@ -95,7 +95,7 @@ object Bot {
         }
 
         fun getMainGuild(): Guild? {
-                return jda.getGuildById(Config.mainServer)
+                return jda.getGuildById(Config.mainGuildId)
         }
 
         private fun getModuleHelpEmbedLine(prefix: String, command: Command): String {

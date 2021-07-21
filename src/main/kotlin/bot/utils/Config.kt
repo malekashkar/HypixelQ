@@ -62,5 +62,5 @@ object Config {
     const val mvpPlusPlusRole = "865460562578112523"
   }
 
-  const val mainServer = "718872125490069534"
+  const val mainGuildId = "862795940205035530"
 }

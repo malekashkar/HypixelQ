@@ -36,10 +36,11 @@ class InfoCommand: Command() {
                     discordUser = context.jda.retrieveUserById(userData.id!!).await()
                     hypixelData = userData.hypixelData
                 } else {
-                    val hypixelPlayerData = Hypixel.getPlayerData(mojangProfile.id)
-                    if(hypixelPlayerData != null) {
+                    val playerData = Hypixel.getPlayerData(mojangProfile.id)
+                    if(playerData != null) {
+                        hypixelData = playerData.statsData
                         Bot.database.userRepository.updateUuid(userData, mojangProfile.id)
-                        Bot.database.userRepository.updateStats(userData, hypixelPlayerData.statsData)
+                        Bot.database.userRepository.updateStats(userData, playerData.statsData)
                     }
                 }
             }
@@ -76,7 +77,7 @@ class InfoCommand: Command() {
         } else {
             context.reply(
                 EmbedTemplates
-                    .error("Please make sure that the provided user has registered with our discord bot!")
+                    .error("We were unable to find the provided users information!")
                     .build()
             ).queue()
         }
