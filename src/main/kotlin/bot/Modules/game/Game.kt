@@ -73,7 +73,7 @@ object Game {
             val gameVoice = gameVoicePre.await()
 
             for(member in members) {
-                guild.moveVoiceMember(member, gameVoice)
+                guild.moveVoiceMember(member, gameVoice).queue()
             }
 
             gameText.sendMessage(

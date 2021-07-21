@@ -19,7 +19,8 @@ class GameModule(bot: Bot): Module(
         IgnoreCommand(),
         InviteCommand(),
         PartyCommand(),
-        LeaveCommand()
+        LeaveCommand(),
+        KickCommand()
     ),
     arrayOf(
         QueueEvent(),

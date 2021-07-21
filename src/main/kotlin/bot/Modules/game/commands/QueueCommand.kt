@@ -24,22 +24,24 @@ class QueueCommand: Command() {
                 val userData = context.getUserData()
                 if(userData.uuid != null) {
                     val party = Bot.database.partyRepository.findPartyWithPlayer(Player(member.id, userData.uuid))
-                    if(party != null && party.leaderId == member.id) {
-                        if(party.players.size > 1) {
-                            Game.createGame(context.guild!!, party.players)
+                    if(party != null) {
+                        if(party.leaderId == member.id) {
+                            if(party.players.size > 1) {
+                                Game.createGame(context.guild!!, party.players)
+                            } else {
+                                context.reply(
+                                    EmbedTemplates
+                                        .error("You must have more than 1 person in your party to queue!")
+                                        .build()
+                                ).queue()
+                            }
                         } else {
                             context.reply(
                                 EmbedTemplates
-                                    .error("You must have more than 1 person in your party to queue!")
+                                    .error("Only party leaders are able to start games in a party.")
                                     .build()
                             ).queue()
                         }
-                    } else if(party != null && party.leaderId != member.id) {
-                        context.reply(
-                            EmbedTemplates
-                                .error("Only party leaders are able to start games in a party.")
-                                .build()
-                        ).queue()
                     } else {
                         var gameType: GameType? = null
                         if(mode != null) {
