@@ -30,20 +30,16 @@ class HistoryCommand: Command() {
                         val description: MutableList<String> = mutableListOf()
                         historyChunk.forEach { archive ->
                             val playersDescription: MutableList<String> = mutableListOf()
-                            val leader = archive.players.find { it.leader }
-                            val leaderDescription = playersData.find { it.id == leader?.playerId }?.hypixelData?.displayName ?: "N/A"
-
                             archive.players.forEach { player ->
                                 playersDescription.add(
-                                    playersData.find { data -> data.id == player.playerId }?.hypixelData?.displayName ?: "N/A"
+                                    if(player.leader) {
+                                        ":star2: " + (playersData.find { data -> data.id == player.playerId }?.hypixelData?.displayName ?: "N/A")
+                                    } else {
+                                        playersData.find { data -> data.id == player.playerId }?.hypixelData?.displayName ?: "N/A"
+                                    }
                                 )
                             }
-
-                            description.add(
-                                "**Game Lasted ${archive.gameLength.humanizeMs()}**\n" +
-                                        leaderDescription + "\n" +
-                                        playersDescription.joinToString("\n")
-                            )
+                            description.add("**Game Lasted ${archive.gameLength.humanizeMs()}**\n" + playersDescription.joinToString(", "))
                         }
                         EmbedTemplates
                             .normal(description.joinToString("\n\n"), "Game History")
