@@ -15,19 +15,22 @@ class PartyCommand: Command() {
     suspend fun execute(context: ICommandContext) {
         val playerData = Bot.database.userRepository.getUser(discordId = context.author.id)
         if(playerData.uuid != null) {
-            val player = Player(playerData.id!!, playerData.uuid)
-            val party = Bot.database.partyRepository.findPartyWithPlayer(player)
+            val party = Bot.database.partyRepository.findPartyWithPlayer(playerData.id!!)
             if(party != null) {
                 val players = party.players.map { context.guild!!.retrieveMemberById(it.playerId).await() }
-                val playersMention = players.filter { it.id != party.leaderId }.joinToString { it.asMention }
-                val leader = players.find { it.id == party.leaderId }?.asMention
+                val leader = party.players.find { it.leader }
+                val playersMention = players.filter { it.id != leader?.playerId }.joinToString { it.asMention }
                 context.reply(
                     EmbedTemplates
                         .normal(
                             "Below is the list of players in your party.",
                             "Party Players"
                         )
-                        .addField("Leader", leader, true)
+                        .addField(
+                            "Leader",
+                            players.find { it.id == leader?.playerId }?.asMention,
+                            true
+                        )
                         .addField("Players", playersMention, true)
                         .build()
                 ).queue()

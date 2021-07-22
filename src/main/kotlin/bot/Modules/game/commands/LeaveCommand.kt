@@ -14,11 +14,11 @@ class LeaveCommand: Command() {
     suspend fun execute(context: ICommandContext) {
         val playerData = Bot.database.userRepository.getUser(discordId = context.author.id)
         if(playerData.uuid != null) {
-            val player = Player(playerData.id!!, playerData.uuid)
-            val party = Bot.database.partyRepository.findPartyWithPlayer(player)
-            if(party != null) {
-                if(party.leaderId == context.author.id) {
-                    Bot.database.partyRepository.deleteParty(party.leaderId)
+            val party = Bot.database.partyRepository.findPartyWithPlayer(playerData.id!!)
+            val leader = party?.players?.find { it.leader }
+            if(party != null && leader != null) {
+                if(leader.playerId == context.author.id) {
+                    Bot.database.partyRepository.deleteParty(leader.playerId)
                     context.reply(
                         EmbedTemplates
                             .normal(
@@ -28,7 +28,7 @@ class LeaveCommand: Command() {
                             .build()
                     ).queue()
                 } else {
-                    Bot.database.partyRepository.removePartyPlayer(party, player)
+                    Bot.database.partyRepository.removePartyPlayer(party, playerData.id!!)
                     context.reply(
                         EmbedTemplates
                             .normal(

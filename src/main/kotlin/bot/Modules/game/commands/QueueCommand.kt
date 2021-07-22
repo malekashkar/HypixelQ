@@ -23,9 +23,10 @@ class QueueCommand: Command() {
             if(member?.voiceState?.channel?.id == Config.Channels.queueRoomChannel) {
                 val userData = context.getUserData()
                 if(userData.uuid != null) {
-                    val party = Bot.database.partyRepository.findPartyWithPlayer(Player(member.id, userData.uuid))
+                    val party = Bot.database.partyRepository.findPartyWithPlayer(member.id)
                     if(party != null) {
-                        if(party.leaderId == member.id) {
+                        val partyLeader = party.players.find { it.leader }
+                        if(partyLeader?.playerId == member.id) {
                             if(party.players.size > 1) {
                                 Game.createGame(context.guild!!, party.players)
                             } else {

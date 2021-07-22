@@ -22,17 +22,16 @@ class InviteCommand: Command() {
         if(user != null) {
             val playerData = Bot.database.userRepository.getUser(discordId = user.id)
             if(playerData.uuid != null) {
-                val party = Bot.database.partyRepository.findPartyWithPlayer(Player(playerData.id!!, playerData.uuid))
-                if(party != null && party.leaderId == playerData.id) {
-                    if(party.players.size < 4) {
+                val party = Bot.database.partyRepository.findPartyWithPlayer(playerData.id!!)
+                val leader = party?.players?.find { it.leader }
+                if(leader == null || context.author.id != leader.playerId) {
+                    if(party == null || party.players.size < 4) {
                         val pastInvite = Bot.database.partyInviteRepository.findInvite(context.author.id, user.id)
                         if(pastInvite == null) {
-                            val dmChannel = user
-                                .openPrivateChannel()
-                                .await()
-
                             try {
-                                val inviteMessage = dmChannel
+                                val inviteMessage = user
+                                    .openPrivateChannel()
+                                    .await()
                                     .sendMessageEmbeds(
                                         EmbedTemplates.normal(
                                             "You have been invited to ${context.author.asMention} party on **${context.guild!!.name}**.",
@@ -47,8 +46,11 @@ class InviteCommand: Command() {
                                     )
                                     .await()
 
+                                val userData = context.getUserData()
+                                val leaderPlayer = Player(true, context.author.id, userData.uuid)
+                                val invitedPlayer = Player(false, user.id, playerData.uuid!!)
                                 Bot.database.partyInviteRepository.createInvite(
-                                    PartyInvite(inviteMessage.id, context.author.id, user.id)
+                                    PartyInvite(inviteMessage.id, leaderPlayer, invitedPlayer)
                                 )
 
                                 context.reply(
@@ -97,6 +99,12 @@ class InviteCommand: Command() {
                         .build()
                 ).queue()
             }
+        } else {
+            context.reply(
+                EmbedTemplates
+                    .error("Please tag the user you would like to invite to your party!")
+                    .build()
+            ).queue()
         }
     }
 }

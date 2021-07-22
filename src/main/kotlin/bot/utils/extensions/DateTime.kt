@@ -1,5 +1,7 @@
 package bot.utils.extensions
 
+import java.text.SimpleDateFormat
+
 fun Long.humanizeMs(showMilliseconds: Boolean = false): String {
   var years = 0
   var months = 0
@@ -68,4 +70,8 @@ fun Long.humanizeMs(showMilliseconds: Boolean = false): String {
   }
 
   return str.trim()
+}
+
+fun Long.humanizeMsDate(): String {
+  return SimpleDateFormat("HH:mm:ss MM-dd-yyyy").format(this)
 }

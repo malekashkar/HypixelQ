@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Archive(
-    val gameEnded: Long,
+    val gameLength: Long,
     val players: List<Player>
 )

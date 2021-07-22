@@ -66,7 +66,7 @@ class QueueRepository(
             SearchQueueOptions(playerData, filter).pipeline.toList()
         )
         return if(result.toList().size >= gameType.size) {
-            result.toList().slice(1..gameType.size).map { Player(it.id, it.uuid) }
+            result.toList().slice(1..gameType.size).map { Player(true, it.id, it.uuid) }
         } else {
             null
         }

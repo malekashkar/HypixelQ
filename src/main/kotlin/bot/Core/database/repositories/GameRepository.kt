@@ -42,7 +42,8 @@ class GameRepository(
     suspend fun deleteGame(categoryId: String) {
         val gameData = collection.findOne(Game::categoryId eq categoryId)
         if(gameData != null) {
-            Bot.database.archiveRepository.createArchive(gameData.players)
+            val gameLength = gameData.createdAt - System.currentTimeMillis()
+            Bot.database.archiveRepository.createArchive(gameLength, gameData.players)
             collection.deleteOne(Game::categoryId eq categoryId)
         }
     }

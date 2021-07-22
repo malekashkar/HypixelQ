@@ -20,7 +20,8 @@ class GameModule(bot: Bot): Module(
         InviteCommand(),
         PartyCommand(),
         LeaveCommand(),
-        KickCommand()
+        KickCommand(),
+        HistoryCommand()
     ),
     arrayOf(
         QueueEvent(),

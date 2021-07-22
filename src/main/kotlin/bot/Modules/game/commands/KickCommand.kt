@@ -19,20 +19,19 @@ class KickCommand: Command() {
         if(user != null) {
             val userData = context.getUserData()
             if(userData.uuid != null) {
-                val player = Player(context.author.id, userData.uuid)
-                val party = Bot.database.partyRepository.findPartyWithPlayer(player)
+                val party = Bot.database.partyRepository.findPartyWithPlayer(context.author.id)
                 val targetUserData = Bot.database.userRepository.getUser(discordId = user.id)
-                if(targetUserData.uuid != null) {
-                    if(party != null && party.leaderId == context.author.id) {
-                        val targetUserPlayer = Player(user.id, targetUserData.uuid)
-                        if(player == targetUserPlayer) {
+                val leader = party?.players?.find { it.leader }
+                if(targetUserData.uuid != null && leader != null) {
+                    if(leader.playerId == context.author.id) {
+                        if(context.author.id == user.id) {
                           context.reply(
                               EmbedTemplates
                                   .error("You may not kick yourself from your own party!")
                                   .build()
                           ).queue()
-                        } else if(party.players.contains(targetUserPlayer)) {
-                            Bot.database.partyRepository.removePartyPlayer(party, targetUserPlayer)
+                        } else if(party.players.contains(party.players.find { it.playerId == user.id })) {
+                            Bot.database.partyRepository.removePartyPlayer(party, user.id)
                             context.reply(
                                 EmbedTemplates
                                     .normal(

@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Player(
+    val leader: Boolean = false,
     val playerId: String,
     val playerUuid: String? = null
 )
@@ -20,5 +21,7 @@ data class Game(
     val categoryId: String,
     val type: GameType,
     val players: List<Player>,
+
+    var createdAt: Long = System.currentTimeMillis(),
     var _isNew: Boolean = false
 )

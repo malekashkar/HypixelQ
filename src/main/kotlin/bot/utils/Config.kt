@@ -7,6 +7,12 @@ object Config {
     val emoji: String
   )
 
+  data class AutoRole(
+    val roleId: String,
+    val emoji: String,
+    val description: String
+  )
+
   val ticketTypes = listOf(
     TicketType("General Support", "support", Emojis.supportTicket),
     TicketType("User Report", "report", Emojis.reportTicket)
@@ -20,6 +26,14 @@ object Config {
   val devs =
     mutableListOf("584915458302672916", "574951722645192734", "693914342625771551", "610861621287583752")
 
+  val autoRoles = listOf(
+    AutoRole(Roles.bridgersRole, "\uD83C\uDF09", "Let your teammates know your the best bedwars bridger."), // Bridger
+    AutoRole(Roles.announcementsRole, "\uD83C\uDFA4", "Be notified whenever we announce anything of less importance."), // Announcements
+    AutoRole(Roles.updatesRole, "\uD83D\uDCEA", "Be notified when Hypixel or we come out with an update."), // Updates
+    AutoRole(Roles.eventsRole, "\uD83C\uDF88", "Be notified whenever we create or start an event."), // Events
+    AutoRole(Roles.giveawaysRole, "\uD83C\uDF89", "Be notified whenever we come out with a new giveaway."), // Giveaways
+  )
+
   object Emojis {
     const val accept = "✅"
     const val deny = "❌"
@@ -31,6 +45,7 @@ object Config {
     const val statsChannelUpdateInt = 300_000L
     const val userStatsUpdateInt = 10_800_000L
     const val partyInviteExpire = 600_000L
+    const val donatorsShoutoutCheckInt = 86_400_000L
   }
 
   object Channels {
@@ -40,8 +55,12 @@ object Config {
     const val inQueueGameStats = "865083552676970496"
     const val inProgressGameStats = "865082532819369984"
 
+    const val announcementsChannel = "866025066373054526"
+    const val autoRolesChannel = "866030855356153906"
     const val generalGuideChannel = "864714730529619998"
     const val liveSupportChannel = "864714786678505472"
+    const val donatorRolesChannel = "867428894969167912"
+    const val queueStatusChannel = "867457243376648233"
 
     const val registrationProcessChannel = "864652159815516160"
     const val registrationChannel = "864294706832605224"
@@ -54,6 +73,13 @@ object Config {
   }
 
   object Roles {
+    const val bridgersRole = "867257881648037909"
+    const val announcementsRole = "867258100582580234"
+    const val updatesRole = "867258128902520832"
+    const val eventsRole = "867258146866331668"
+    const val giveawaysRole = "867258168936628235"
+
+    const val donatorRole = "867428720234594384"
     const val registeredRole = "864597891262709780"
     const val vipRole = "865458492444901426"
     const val vipPlusRole = "865459582209753108"

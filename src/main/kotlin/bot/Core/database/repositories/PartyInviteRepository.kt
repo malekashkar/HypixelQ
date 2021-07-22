@@ -2,8 +2,9 @@ package bot.Core.database.repositories
 
 import bot.Core.database.Database
 import bot.Core.database.models.PartyInvite
+import bot.Core.database.models.Player
 import org.litote.kmongo.coroutine.CoroutineCollection
-import org.litote.kmongo.eq
+import org.litote.kmongo.*
 
 class PartyInviteRepository(
     database: Database,
@@ -18,8 +19,8 @@ class PartyInviteRepository(
             collection.findOne(PartyInvite::inviteMessageId eq inviteMessageId)
         } else {
             collection.findOne(
-                PartyInvite::inviterId eq inviter,
-                PartyInvite::invitedId eq invited
+                PartyInvite::inviter / Player::playerId eq inviter,
+                PartyInvite::invited / Player::playerId eq invited
             )
         }
     }
@@ -29,8 +30,8 @@ class PartyInviteRepository(
             collection.deleteOne(PartyInvite::inviteMessageId eq inviteMessageId)
         } else {
             collection.deleteOne(
-                PartyInvite::inviterId eq inviter,
-                PartyInvite::invitedId eq invited
+                PartyInvite::inviter / Player::playerId eq inviter,
+                PartyInvite::invited / Player::playerId eq invited
             )
         }
     }

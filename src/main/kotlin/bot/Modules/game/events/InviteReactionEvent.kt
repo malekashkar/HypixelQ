@@ -23,35 +23,33 @@ class InviteReactionEvent: Event() {
                 if(partyInviteData != null) {
                     val playerData = Bot.database.userRepository.getUser(event.user.id)
                     if(playerData.uuid != null) {
-                        val player = Player(event.user.id, playerData.uuid)
-                        val pastParty = Bot.database.partyRepository.findPartyWithPlayer(player)
+                        val pastParty = Bot.database.partyRepository.findPartyWithPlayer(playerData.id!!)
                         if (pastParty == null) {
-                            val partyInviterData = Bot.database.userRepository.getUser(partyInviteData.inviterId)
+                            val partyInviterData = Bot.database.userRepository.getUser(partyInviteData.inviter.playerId)
                             if(partyInviterData.uuid != null) {
-                                val party = Bot.database.partyRepository.getParty(Player(partyInviteData.inviterId, partyInviterData.uuid))
+                                val party = Bot.database.partyRepository.getParty(partyInviteData.inviter)
                                 val timeAgo = event.message?.timeCreated?.toInstant()?.toEpochMilli()
                                     ?.minus(System.currentTimeMillis()) ?: 0
                                 if (timeAgo < Config.Intervals.partyInviteExpire) {
-                                    Bot.database.partyRepository.addPartyPlayer(party, player)
+                                    Bot.database.partyRepository.addPartyPlayer(party, partyInviteData.invited)
                                     Bot.database.partyInviteRepository.deleteInvite(inviteMessageId = event.messageId)
 
                                     try {
                                         event.channel.sendMessageEmbeds(
                                             EmbedTemplates.normal(
-                                                "You join the party successfully!",
+                                                "You joined the party successfully!",
                                                 "Party Joined"
                                             ).build()
                                         ).queue()
 
-                                        val inviter = Bot.jda.retrieveUserById(partyInviteData.inviterId).await()
-                                        val inviterDmChannel = inviter.openPrivateChannel().await()
-
-                                        inviterDmChannel?.sendMessageEmbeds(
-                                            EmbedTemplates.normal(
-                                                "${event.user.asMention} joined your party!",
-                                                "User Joined Party"
-                                            ).build()
-                                        )?.queue()
+                                        Bot.jda.retrieveUserById(partyInviteData.inviter.playerId).await()
+                                            .openPrivateChannel().await()
+                                            .sendMessageEmbeds(
+                                                EmbedTemplates.normal(
+                                                    "${event.user.asMention} joined your party!",
+                                                    "User Joined Party"
+                                                ).build()
+                                            ).queue()
                                     } catch (err: Throwable) {
                                         println(err)
                                     }
