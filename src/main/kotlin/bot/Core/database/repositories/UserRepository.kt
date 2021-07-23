@@ -37,21 +37,21 @@ class UserRepository(
 
     suspend fun updateId(userData: User, id: String) {
         userData.id = id
-        collection.updateOne(User::id eq userData.id, set(User::id setTo id))
+        collection.updateOneById(userData._id, set(User::id setTo id))
         ensureSaved(userData)
     }
 
     suspend fun updateUuid(userData: User, uuid: String) {
         userData.uuid = uuid
-        collection.updateOne(User::id eq userData.id, set(User::uuid setTo uuid))
+        collection.updateOneById(userData._id, set(User::uuid setTo uuid))
         ensureSaved(userData)
     }
 
     suspend fun updateStats(userData: User, data: HypixelData) {
         userData.hypixelData = data
         userData.lastUpdated = System.currentTimeMillis()
-        collection.updateOne(
-            User::id eq userData.id,
+        collection.updateOneById(
+            userData._id,
             set(
                 User::hypixelData setTo data,
                 User::lastUpdated setTo System.currentTimeMillis()
@@ -62,13 +62,13 @@ class UserRepository(
 
     suspend fun addToIgnoredList(userData: User, ignoreUuid: String) {
         userData.ignoredList.add(ignoreUuid)
-        collection.updateOne(User::id eq userData.id, set(User::ignoredList setTo userData.ignoredList))
+        collection.updateOneById(userData._id, set(User::ignoredList setTo userData.ignoredList))
         ensureSaved(userData)
     }
 
     suspend fun removeFromIgnoreList(userData: User, ignoreUuid: String) {
         userData.ignoredList.remove(ignoreUuid)
-        collection.updateOne(User::id eq userData.id, set(User::ignoredList setTo userData.ignoredList))
+        collection.updateOneById(userData._id, set(User::ignoredList setTo userData.ignoredList))
         ensureSaved(userData)
     }
 }

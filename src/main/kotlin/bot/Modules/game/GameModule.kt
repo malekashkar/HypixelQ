@@ -17,11 +17,15 @@ class GameModule(bot: Bot): Module(
         QueueCommand(),
         EndGameCommand(),
         IgnoreCommand(),
-        InviteCommand(),
         PartyCommand(),
-        LeaveCommand(),
-        KickCommand(),
-        HistoryCommand()
+        HistoryCommand(),
+        PartyCommand(),
+        PartyCommand.TransferCommand(),
+        PartyCommand.DisbandCommand(),
+        PartyCommand.InviteCommand(),
+        PartyCommand.KickCommand(),
+        PartyCommand.LeaveCommand(),
+        PartyCommand.ListCommand()
     ),
     arrayOf(
         QueueEvent(),

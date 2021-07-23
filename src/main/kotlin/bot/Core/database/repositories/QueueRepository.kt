@@ -11,24 +11,15 @@ class QueueRepository(
     database: Database,
     private val collection: CoroutineCollection<Queue>
 ): Repository(database) {
-    private suspend fun ensureSaved(queueData: Queue) {
-        if(queueData._isNew) {
-            queueData._isNew = false
-            collection.insertOne(queueData)
-        }
-    }
-
     suspend fun createQueue(
-        id: String,
-        uuid: String,
+        player: Player,
         hypixelData: HypixelData,
         filter: HypixelData?,
         ignoredList: List<String>? = arrayListOf(),
         gameType: GameType
     ) {
         val queueData = Queue(
-            id,
-            uuid,
+            player,
             gameType,
             hypixelData,
             filter,
@@ -42,9 +33,9 @@ class QueueRepository(
         playerUuid: String? = null
     ) {
         if(discordId != null) {
-            collection.deleteOne(Queue::id eq discordId)
+            collection.deleteOne(Queue::player / Player::playerId eq discordId)
         } else if(playerUuid != null) {
-            collection.deleteOne(Queue::uuid eq playerUuid)
+            collection.deleteOne(Queue::player / Player::playerUuid eq playerUuid)
         }
     }
 
@@ -53,9 +44,9 @@ class QueueRepository(
         playerUuid: String? = null
     ): Queue? {
         if(discordId != null) {
-            return collection.findOne(Queue::id eq discordId)
+            return collection.findOne(Queue::player / Player::playerId eq discordId)
         } else if(playerUuid != null) {
-            return collection.findOne(Queue::uuid eq playerUuid)
+            return collection.findOne(Queue::player / Player::playerUuid eq playerUuid)
         } else {
             return null
         }
@@ -65,8 +56,10 @@ class QueueRepository(
         val result = collection.aggregate<Queue>(
             SearchQueueOptions(playerData, filter).pipeline.toList()
         )
-        return if(result.toList().size >= gameType.size) {
-            result.toList().slice(1..gameType.size).map { Player(true, it.id, it.uuid) }
+        return if(result.toList().size >= gameType.size - 1) {
+            result.toList().slice(0 until gameType.size - 1).map {
+                Player(it.player.leader, it.player.playerId, it.player.playerUuid)
+            }
         } else {
             null
         }
@@ -81,7 +74,7 @@ class QueueRepository(
                 val aggregation = arrayListOf<Bson>()
 
                 if(playerData.ignoredList.isNotEmpty()) {
-                    aggregation.add(match(Queue::uuid nin playerData.ignoredList))
+                    aggregation.add(match(Queue::player / Player::playerUuid nin playerData.ignoredList))
                 }
 
                 if (playerData.hypixelData.bedwarsLevel != null) {

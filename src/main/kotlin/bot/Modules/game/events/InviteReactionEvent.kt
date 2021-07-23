@@ -1,6 +1,7 @@
 package bot.Modules.game.events
 
 import bot.Bot
+import bot.Core.database.models.Party
 import bot.Core.database.models.Player
 import bot.Core.structures.EmbedTemplates
 import bot.Core.structures.base.Event
@@ -27,36 +28,44 @@ class InviteReactionEvent: Event() {
                         if (pastParty == null) {
                             val partyInviterData = Bot.database.userRepository.getUser(partyInviteData.inviter.playerId)
                             if(partyInviterData.uuid != null) {
-                                val party = Bot.database.partyRepository.getParty(partyInviteData.inviter)
-                                val timeAgo = event.message?.timeCreated?.toInstant()?.toEpochMilli()
-                                    ?.minus(System.currentTimeMillis()) ?: 0
-                                if (timeAgo < Config.Intervals.partyInviteExpire) {
-                                    Bot.database.partyRepository.addPartyPlayer(party, partyInviteData.invited)
-                                    Bot.database.partyInviteRepository.deleteInvite(inviteMessageId = event.messageId)
+                                val party = Bot.database.partyRepository.findPartyWithPlayer(partyInviteData.inviter.playerId)
+                                if(party != null) {
+                                    val timeAgo = event.message?.timeCreated?.toInstant()?.toEpochMilli()
+                                        ?.minus(System.currentTimeMillis()) ?: 0
+                                    if (timeAgo < Config.Intervals.partyInviteExpire) {
+                                        Bot.database.partyRepository.addPartyPlayer(party, partyInviteData.invited)
+                                        Bot.database.partyInviteRepository.deleteInvite(inviteMessageId = event.messageId)
 
-                                    try {
-                                        event.channel.sendMessageEmbeds(
-                                            EmbedTemplates.normal(
-                                                "You joined the party successfully!",
-                                                "Party Joined"
-                                            ).build()
-                                        ).queue()
-
-                                        Bot.jda.retrieveUserById(partyInviteData.inviter.playerId).await()
-                                            .openPrivateChannel().await()
-                                            .sendMessageEmbeds(
+                                        try {
+                                            event.channel.sendMessageEmbeds(
                                                 EmbedTemplates.normal(
-                                                    "${event.user.asMention} joined your party!",
-                                                    "User Joined Party"
+                                                    "You joined the party successfully!",
+                                                    "Party Joined"
                                                 ).build()
                                             ).queue()
-                                    } catch (err: Throwable) {
-                                        println(err)
+
+                                            Bot.jda.retrieveUserById(partyInviteData.inviter.playerId).await()
+                                                .openPrivateChannel().await()
+                                                .sendMessageEmbeds(
+                                                    EmbedTemplates.normal(
+                                                        "${event.user.asMention} joined your party!",
+                                                        "User Joined Party"
+                                                    ).build()
+                                                ).queue()
+                                        } catch (err: Throwable) {
+                                            println(err)
+                                        }
+                                    } else {
+                                        event.channel.sendMessageEmbeds(
+                                            EmbedTemplates
+                                                .error("The party invite has expired, please request another!")
+                                                .build()
+                                        ).queue()
                                     }
                                 } else {
                                     event.channel.sendMessageEmbeds(
                                         EmbedTemplates
-                                            .error("The party invite has expired!")
+                                            .error("The party you are trying to join has been disbanded.")
                                             .build()
                                     ).queue()
                                 }

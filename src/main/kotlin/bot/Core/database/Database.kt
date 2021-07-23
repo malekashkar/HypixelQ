@@ -32,9 +32,9 @@ class Database() {
     val partyInviteRepository: PartyInviteRepository
 
     init {
-        val connectionString = ConnectionString(System.getenv("MONGO_URL") ?: "mongodb://localhost/hypixelq")
+        val connectionString = ConnectionString(System.getenv("MONGO_URL") ?: "mongodb://localhost/bedwarsq")
         client = KMongo.createClient(connectionString).coroutine
-        database = client.getDatabase(connectionString.database ?: "hypixelq")
+        database = client.getDatabase(connectionString.database ?: "bedwarsq")
 
         configCollection = database.getCollection()
         archiveCollection = database.getCollection()

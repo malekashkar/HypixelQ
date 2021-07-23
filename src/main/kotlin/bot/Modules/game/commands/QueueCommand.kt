@@ -68,9 +68,9 @@ class QueueCommand: Command() {
                                                 .build()
                                         ).queue()
 
+                                        val queuePlayer = Player(false, member.id, userData.uuid)
                                         Bot.database.queueRepository.createQueue(
-                                            member.id,
-                                            userData.uuid!!,
+                                            queuePlayer,
                                             userData.hypixelData,
                                             searchFilter,
                                             userData.ignoredList,

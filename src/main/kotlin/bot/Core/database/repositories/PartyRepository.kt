@@ -17,46 +17,37 @@ class PartyRepository(
         }
     }
 
+    suspend fun createParty(players: MutableList<Player>) {
+        ensureSaved(Party(players))
+    }
+
     suspend fun findPartyWithPlayer(playerId: String): Party? {
         return collection.findOne(Party::players / Player::playerId eq playerId)
     }
 
-    suspend fun getParty(leaderPlayer: Player): Party {
-        return collection.findOne(
-            Party::players / Player::playerId eq leaderPlayer.playerId,
-            Party::players / Player::leader eq true
-        ) ?: Party(mutableListOf(leaderPlayer))
-    }
-
-    suspend fun deleteParty(leaderId: String) {
-        collection.deleteOne(
-            Party::players / Player::playerId eq leaderId,
-            Party::players / Player::leader eq true
-        )
+    suspend fun deleteParty(party: Party) {
+        collection.deleteOneById(party._id)
     }
 
     suspend fun addPartyPlayer(party: Party, player: Player) {
-        val leader = party.players.find { it.leader }
-        if(leader != null) {
-            party.players.add(player)
-            collection.updateOne(
-                Party::players / Player::playerId eq leader.playerId,
-                set(Party::players setTo party.players)
-            )
-            ensureSaved(party)
-        }
+        party.players.add(player)
+        collection.updateOneById(party._id, set(Party::players setTo party.players))
+        ensureSaved(party)
     }
 
     suspend fun removePartyPlayer(party: Party, playerId: String) {
         val player = party.players.find { it.playerId == playerId }
-        val leader = party.players.find { it.leader }
-        if(player != null && leader != null) {
+        if(player != null) {
             party.players.remove(player)
-            collection.updateOne(
-                Party::players / Player::playerId eq leader.playerId,
-                set(Party::players setTo party.players)
-            )
+            collection.updateOneById(party._id, set(Party::players setTo party.players))
             ensureSaved(party)
         }
+    }
+
+    suspend fun transferLeadership(party: Party, leaderId: String, playerId: String) {
+        party.players.find { it.playerId == leaderId }?.leader = false
+        party.players.find { it.playerId == playerId }?.leader = true
+        collection.updateOneById(party._id, set(Party::players setTo party.players))
+        ensureSaved(party)
     }
 }

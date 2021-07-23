@@ -5,6 +5,7 @@ import bot.Core.structures.EmbedTemplates
 import bot.Core.structures.base.Command
 import bot.Modules.game.Game
 import bot.api.ICommandContext
+import bot.utils.extensions.humanizeMsDate
 import net.dv8tion.jda.api.Permission
 
 class EndGameCommand: Command() {

@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Player(
-    val leader: Boolean = false,
+    var leader: Boolean = false,
     val playerId: String,
     val playerUuid: String? = null
 )

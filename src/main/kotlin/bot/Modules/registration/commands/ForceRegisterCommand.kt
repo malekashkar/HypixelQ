@@ -32,45 +32,47 @@ class ForceRegisterCommand: Command() {
             if(username != null && username.trim() != "") {
                 val mojangProfile = Mojang.getMojangProfile(username)
                 if(mojangProfile != null) {
-                    val userData = Bot.database.userRepository.getUser(user.id)
-                    if(userData.uuid == mojangProfile.id) {
-                        context.reply(
-                            EmbedTemplates
-                                .error("The username $username has already been registered in the past!")
-                                .build()
-                        ).queue()
-                        return
-                    }
+                    val userData = Bot.database.userRepository.getUser(mojangUuid = mojangProfile.id)
+                    if(userData.id == null) {
+                        userData.id = user.id
+                        Bot.database.userRepository.updateId(userData, user.id)
 
-                    val playerData = Hypixel.getPlayerData(mojangProfile.id)
-                    if(playerData != null) {
-                        if(
-                            playerData.discordTag != null &&
-                            playerData.discordTag.lowercase() == user.asTag.lowercase()
-                        ) {
-                            userData.uuid = playerData.uuid
-                            userData.hypixelData = playerData.statsData
-                            bot.Modules.registration.User.updateUser(context.guild!!, userData)
-                            context.reply(
-                                EmbedTemplates
-                                    .normal(
-                                        "You have force linked ${user.asMention}'s Hypixel account successfully.",
-                                        "Linked $username"
-                                    )
-                                    .setAuthor("",user.avatarUrl)
-                                    .build()
-                            ).queue()
+                        val playerData = Hypixel.getPlayerData(mojangProfile.id)
+                        if(playerData != null) {
+                            if(
+                                playerData.discordTag != null &&
+                                playerData.discordTag.lowercase() == user.asTag.lowercase()
+                            ) {
+                                userData.uuid = playerData.uuid
+                                userData.hypixelData = playerData.statsData
+                                bot.Modules.registration.User.updateUser(context.guild!!, userData)
+                                context.reply(
+                                    EmbedTemplates
+                                        .normal(
+                                            "You have force linked ${user.asMention}'s Hypixel account successfully.",
+                                            "Linked $username"
+                                        )
+                                        .setAuthor("",user.avatarUrl)
+                                        .build()
+                                ).queue()
+                            } else {
+                                context.reply(
+                                    EmbedTemplates
+                                        .error("You did not link your discord to Hypixel correctly, please try again!")
+                                        .build()
+                                ).queue()
+                            }
                         } else {
                             context.reply(
                                 EmbedTemplates
-                                    .error("You did not link your discord to Hypixel correctly, please try again!")
+                                    .error("The Hypixel API seems to be offline currently, please try again later!")
                                     .build()
                             ).queue()
                         }
                     } else {
                         context.reply(
                             EmbedTemplates
-                                .error("The Hypixel API seems to be offline currently, please try again later!")
+                                .error("The username $username has already been registered in the past!")
                                 .build()
                         ).queue()
                     }

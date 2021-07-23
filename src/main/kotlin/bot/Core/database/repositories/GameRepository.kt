@@ -5,6 +5,7 @@ import bot.Core.database.Database
 import bot.Core.database.models.Game
 import bot.Core.database.models.GameType
 import bot.Core.database.models.Player
+import bot.utils.extensions.humanizeMs
 import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.div
 import org.litote.kmongo.elemMatch
@@ -42,7 +43,7 @@ class GameRepository(
     suspend fun deleteGame(categoryId: String) {
         val gameData = collection.findOne(Game::categoryId eq categoryId)
         if(gameData != null) {
-            val gameLength = gameData.createdAt - System.currentTimeMillis()
+            val gameLength = System.currentTimeMillis() - gameData.createdAt
             Bot.database.archiveRepository.createArchive(gameLength, gameData.players)
             collection.deleteOne(Game::categoryId eq categoryId)
         }

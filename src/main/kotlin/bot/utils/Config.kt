@@ -13,6 +13,17 @@ object Config {
     val description: String
   )
 
+  val woolRoles = listOf(
+    "867445560633458688",
+    "867445764836950087",
+    "867445919980453898",
+    "867446014440505406",
+    "867446411082334238",
+    "867446578268078080",
+    "867446980937908246",
+    "867447133225091162"
+  )
+
   val ticketTypes = listOf(
     TicketType("General Support", "support", Emojis.supportTicket),
     TicketType("User Report", "report", Emojis.reportTicket)
@@ -59,7 +70,7 @@ object Config {
     const val autoRolesChannel = "866030855356153906"
     const val generalGuideChannel = "864714730529619998"
     const val liveSupportChannel = "864714786678505472"
-    const val donatorRolesChannel = "867428894969167912"
+    const val donatorColorRolesChannel = "867428894969167912"
     const val queueStatusChannel = "867457243376648233"
 
     const val registrationProcessChannel = "864652159815516160"

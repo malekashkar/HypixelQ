@@ -23,16 +23,15 @@ abstract class Command {
     val prefixed: Boolean = false,
   )
 
-  @Target(AnnotationTarget.CLASS)
+  @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
   @Retention(AnnotationRetention.RUNTIME)
   annotation class ChildCommand
 
   abstract val name: String
-  abstract val description: String
-
   lateinit var module: Module
 
   var parentCommand: Command? = null
+  open val description: String? = null
   open var aliases: Array<String> = arrayOf()
   open var enabled = true
   open var excludeFromHelp = false

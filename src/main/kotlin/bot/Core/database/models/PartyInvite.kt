@@ -6,5 +6,7 @@ import kotlinx.serialization.Serializable
 data class PartyInvite(
     val inviteMessageId: String,
     val inviter: Player,
-    val invited: Player
+    val invited: Player,
+
+    val cratedAt: Long = System.currentTimeMillis()
 )

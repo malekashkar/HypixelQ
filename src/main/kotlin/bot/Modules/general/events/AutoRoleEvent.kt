@@ -2,6 +2,7 @@ package bot.Modules.general.events
 
 import bot.Core.structures.base.Event
 import bot.utils.Config
+import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
 
 class AutoRoleEvent: Event() {
@@ -10,7 +11,9 @@ class AutoRoleEvent: Event() {
     @Handler
     fun handle(event: ButtonClickEvent) {
         if(event.button != null) {
-            if(Config.autoRoles.map { it.roleId }.contains(event.button!!.id)) {
+            if(
+                Config.autoRoles.map { it.roleId }.contains(event.button!!.id)
+            ) {
                 event.deferEdit().queue()
 
                 val role = event.button!!.id?.let { event.guild!!.getRoleById(it) }
@@ -19,6 +22,13 @@ class AutoRoleEvent: Event() {
                         event.guild!!.removeRoleFromMember(event.member!!, role).queue()
                     } else {
                         event.guild!!.addRoleToMember(event.member!!, role).queue()
+                    }
+                }
+            } else if(Config.woolRoles.contains(event.button!!.id)) {
+                for(role in event.member!!.roles) {
+                    if(Config.woolRoles.contains(role.id)) {
+                        // Remove that role from the person
+
                     }
                 }
             }

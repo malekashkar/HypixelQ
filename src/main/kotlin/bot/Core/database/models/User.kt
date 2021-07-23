@@ -1,7 +1,10 @@
 package bot.Core.database.models
 
 import bot.utils.api.Hypixel
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+import org.litote.kmongo.Id
+import org.litote.kmongo.newId
 
 @Serializable
 data class HypixelData(
@@ -21,5 +24,7 @@ data class User (
     var ignoredList: MutableList<String> = mutableListOf(),
 
     var lastUpdated: Long = System.currentTimeMillis(),
-    var _isNew: Boolean = false
+    var _isNew: Boolean = false,
+
+    @Contextual val _id: Id<User> = newId(),
 )

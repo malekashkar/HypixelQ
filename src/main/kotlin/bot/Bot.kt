@@ -101,7 +101,7 @@ object Bot {
         private fun getModuleHelpEmbedLine(prefix: String, command: Command): String {
                 val name =
                         (if (command.parentCommand != null) "${command.parentCommand!!.name} ${command.name}" else command.name).lowercase()
-                return "**${prefix}${name}**${if (command.usage.isEmpty()) "" else " `${command.usage}` "}${if (command.description.isEmpty()) "" else " - ${command.description} "}"
+                return "**${prefix}${name}**${if (command.usage.isEmpty()) "" else " `${command.usage}` "}${if (command.description?.isEmpty() == true) "" else " - ${command.description} "}"
         }
 
         fun getHelpEmbed(context: ICommandContext, module: Module, prefix: String = "p!"): EmbedBuilder? {
@@ -132,7 +132,7 @@ object Bot {
         fun getHelpEmbed(context: ICommandContext, command: Command): EmbedBuilder? {
                 if (!command.enabled || command.excludeFromHelp || !command.canRun(context)) return null
                 val descriptionLines = arrayListOf<String>()
-                if (command.description.isNotEmpty()) {
+                if (command.description?.isNotEmpty() == true) {
                         descriptionLines.add("${command.description}\n")
                 }
                 if (command.usage.isNotEmpty()) {
