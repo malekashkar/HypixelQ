@@ -20,6 +20,7 @@ class GameModule(bot: Bot): Module(
         PartyCommand(),
         HistoryCommand(),
         PartyCommand(),
+        InfoCommand(),
         PartyCommand.TransferCommand(),
         PartyCommand.DisbandCommand(),
         PartyCommand.InviteCommand(),

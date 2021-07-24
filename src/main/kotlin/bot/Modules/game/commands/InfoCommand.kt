@@ -1,4 +1,4 @@
-package bot.Modules.general.commands
+package bot.Modules.game.commands
 
 import bot.Bot
 import bot.Core.database.models.HypixelData
