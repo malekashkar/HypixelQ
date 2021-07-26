@@ -29,6 +29,7 @@ class RegisterCommand : Command() {
                         if(uuidUserData.id == null && uuidUserData.id != context.author.id) {
                             Bot.database.userRepository.updateId(userData, context.author.id)
                             userData = uuidUserData
+                            userData._isNew = false
                             userData.id = context.author.id
                         }
 

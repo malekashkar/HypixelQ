@@ -1,6 +1,7 @@
 package bot.Core.database.models
 
 import kotlinx.serialization.Serializable
+import org.bson.codecs.pojo.annotations.BsonId
 
 @Serializable
 data class Player(

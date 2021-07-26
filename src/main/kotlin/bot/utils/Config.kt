@@ -30,12 +30,10 @@ object Config {
   )
 
   const val prefix = "="
-  const val version = "2.0.0"
-
-  val officialServerOnlyMode = System.getenv("OFFICIAL_SERVER_ONLY") != null
+  const val version = "1.0.0"
 
   val devs =
-    mutableListOf("584915458302672916", "574951722645192734", "693914342625771551", "610861621287583752")
+    mutableListOf("584915458302672916")
 
   val autoRoles = listOf(
     AutoRole(Roles.bridgersRole, "\uD83C\uDF09", "Let your teammates know your the best bedwars bridger."), // Bridger
@@ -66,17 +64,18 @@ object Config {
     const val inQueueGameStats = "865083552676970496"
     const val inProgressGameStats = "865082532819369984"
 
+    const val registrationProcessChannel = "864652159815516160"
+    const val registrationChannel = "864294706832605224"
+    const val welcomeChannel = "864652271832137768"
+
     const val announcementsChannel = "866025066373054526"
     const val autoRolesChannel = "866030855356153906"
     const val generalGuideChannel = "864714730529619998"
     const val liveSupportChannel = "864714786678505472"
     const val donatorColorRolesChannel = "867428894969167912"
-    const val queueStatusChannel = "867457243376648233"
 
-    const val registrationProcessChannel = "864652159815516160"
-    const val registrationChannel = "864294706832605224"
-    const val welcomeChannel = "864652271832137768"
-
+    const val totalGamesLeaderboard = "868519309561966633"
+    const val gameTimeLeaderboard = "868519328176287774"
     const val commandsChannel = "864289771018911757"
 
     const val queueRoomChannel = "864703101067722782"

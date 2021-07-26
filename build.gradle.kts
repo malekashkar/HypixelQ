@@ -26,6 +26,8 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
 
+    implementation("com.github.shyiko.skedule:skedule:0.4.0")
+
     implementation("com.github.minndevelopment:jda-ktx:${jdaKtxVersion}")
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")

@@ -24,6 +24,7 @@ import io.ktor.client.*
 import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
 import net.dv8tion.jda.api.entities.Guild
+import kotlin.collections.ArrayList
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.memberFunctions
@@ -91,7 +92,6 @@ object Bot {
                         .setEnabledIntents(intents)
                 jda = jdaBuilder.build()
                 started = true
-
         }
 
         fun getMainGuild(): Guild? {

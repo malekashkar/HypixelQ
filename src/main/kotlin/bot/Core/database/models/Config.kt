@@ -9,5 +9,8 @@ import org.litote.kmongo.newId
 data class Config(
     var ticketPanelId: String? = null,
 
+    var gameCountLbMessageId: String? = null,
+    var gameLengthLbMessageId: String? = null,
+
     @Contextual val _id: Id<Config> = newId()
 )

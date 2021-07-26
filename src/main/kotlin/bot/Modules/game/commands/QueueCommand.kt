@@ -12,6 +12,7 @@ import dev.minn.jda.ktx.await
 class QueueCommand: Command() {
     override val name = "queue"
     override val description = "Queue up to join any available games."
+    override var aliases = arrayOf("q")
 
     @Executor
     suspend fun execute(
@@ -57,26 +58,24 @@ class QueueCommand: Command() {
                             val alreadyQueued = Bot.database.queueRepository.findQueue(context.author.id, null)
                             if(alreadyQueued == null) {
                                 val searchFilter = HypixelData()
-                                if(userData.uuid != null) {
-                                    val queuePlayers = Bot.database.queueRepository.searchForPlayers(userData, searchFilter, gameType)
-                                    if(queuePlayers != null) {
-                                        Game.createGame(context.guild!!, queuePlayers)
-                                    } else {
-                                        context.reply(
-                                            EmbedTemplates
-                                                .error("We were unable to find a game instantly, you have been added to the queue!")
-                                                .build()
-                                        ).queue()
+                                val queuePlayers = Bot.database.queueRepository.searchForPlayers(userData, searchFilter, gameType)
+                                if(queuePlayers != null) {
+                                    Game.createGame(context.guild!!, queuePlayers)
+                                } else {
+                                    context.reply(
+                                        EmbedTemplates
+                                            .error("We were unable to find a game instantly, you have been added to the queue!")
+                                            .build()
+                                    ).queue()
 
-                                        val queuePlayer = Player(false, member.id, userData.uuid)
-                                        Bot.database.queueRepository.createQueue(
-                                            queuePlayer,
-                                            userData.hypixelData,
-                                            searchFilter,
-                                            userData.ignoredList,
-                                            gameType
-                                        )
-                                    }
+                                    val queuePlayer = Player(false, member.id, userData.uuid)
+                                    Bot.database.queueRepository.createQueue(
+                                        queuePlayer,
+                                        userData.hypixelData,
+                                        searchFilter,
+                                        userData.ignoredList,
+                                        gameType
+                                    )
                                 }
                             } else {
                                 context.reply(
@@ -93,6 +92,12 @@ class QueueCommand: Command() {
                             ).queue()
                         }
                     }
+                } else {
+                    context.reply(
+                        EmbedTemplates
+                            .error("You must register before running this command!")
+                            .build()
+                    ).queue()
                 }
             } else {
                 val queueRoomChannel = context.guild?.getVoiceChannelById(Config.Channels.queueRoomChannel)

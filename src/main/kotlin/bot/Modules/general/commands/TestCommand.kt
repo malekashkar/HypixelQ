@@ -16,22 +16,9 @@ class TestCommand: Command() {
 
     @Executor
     suspend fun execute(context: ICommandContext) {
-        //if(Calendar.DAY_OF_MONTH == 1) {
-            val donatorRole = context.guild!!.getRoleById(Config.Roles.donatorRole)
-            if(donatorRole != null) {
-                val donatingMembers = context.guild!!.loadMembers().await().filter { it.roles.contains(donatorRole) }
-                if(donatingMembers.isNotEmpty()) {
-                    val announcementsChannel = context.guild!!.getTextChannelById(Config.Channels.announcementsChannel)
-                    val announcementsRole = context.guild!!.getRoleById(Config.Roles.announcementsRole)
-                    if(announcementsChannel != null && announcementsRole != null) {
-                        announcementsChannel.sendMessage(
-                            "Thank you to the following members of our community for donating this month!" +
-                                    "\n\n${donatingMembers.joinToString { it.asMention }}" +
-                                    "\n\n(${announcementsRole.asMention})"
-                        ).queue()
-                    }
-                }
-            }
-        //}
+        val gameCount = Bot.database.archiveRepository.gameCountWeeklyLeaderboard()
+        val gameLength = Bot.database.archiveRepository.gameLengthWeeklyLeaderboard()
+        println(gameCount)
+        println(gameLength)
     }
 }
