@@ -74,8 +74,8 @@ object Config {
     const val liveSupportChannel = "864714786678505472"
     const val donatorColorRolesChannel = "867428894969167912"
 
-    const val totalGamesLeaderboard = "868519309561966633"
-    const val gameTimeLeaderboard = "868519328176287774"
+    const val gameCountLb = "868519309561966633"
+    const val gameTimeLb = "868519328176287774"
     const val commandsChannel = "864289771018911757"
 
     const val queueRoomChannel = "864703101067722782"

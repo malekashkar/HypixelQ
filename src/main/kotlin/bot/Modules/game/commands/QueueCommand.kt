@@ -57,8 +57,7 @@ class QueueCommand: Command() {
                         if(gameType != null) {
                             val alreadyQueued = Bot.database.queueRepository.findQueue(context.author.id, null)
                             if(alreadyQueued == null) {
-                                val searchFilter = HypixelData()
-                                val queuePlayers = Bot.database.queueRepository.searchForPlayers(userData, searchFilter, gameType)
+                                val queuePlayers = Bot.database.queueRepository.searchForPlayers(userData, gameType)
                                 if(queuePlayers != null) {
                                     Game.createGame(context.guild!!, queuePlayers)
                                 } else {
@@ -72,7 +71,6 @@ class QueueCommand: Command() {
                                     Bot.database.queueRepository.createQueue(
                                         queuePlayer,
                                         userData.hypixelData,
-                                        searchFilter,
                                         userData.ignoredList,
                                         gameType
                                     )

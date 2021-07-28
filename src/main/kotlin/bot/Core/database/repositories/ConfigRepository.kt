@@ -25,4 +25,20 @@ class ConfigRepository(
             set(Config::ticketPanelId setTo ticketPanelId)
         )
     }
+
+    suspend fun setGameCountLbMessageId(messageId: String) {
+        val config = getConfig()
+        collection.updateOne(
+            Config::_id eq config._id,
+            set(Config::gameCountLbMessageId setTo messageId)
+        )
+    }
+
+    suspend fun setGameLengthLbMessageId(messageId: String) {
+        val config = getConfig()
+        collection.updateOne(
+            Config::_id eq config._id,
+            set(Config::gameLengthLbMessageId setTo messageId)
+        )
+    }
 }

@@ -6,9 +6,6 @@ import kotlinx.serialization.Serializable
 data class Queue (
     val player: Player,
     val gameType: GameType,
-
     val hypixelData: HypixelData,
-
-    val filter: HypixelData? = null,
     val ignoredList: List<String>? = arrayListOf(),
 )

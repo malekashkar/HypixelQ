@@ -14,7 +14,6 @@ class QueueRepository(
     suspend fun createQueue(
         player: Player,
         hypixelData: HypixelData,
-        filter: HypixelData?,
         ignoredList: List<String>? = arrayListOf(),
         gameType: GameType
     ) {
@@ -22,7 +21,6 @@ class QueueRepository(
             player,
             gameType,
             hypixelData,
-            filter,
             ignoredList
         )
         collection.insertOne(queueData)
@@ -52,9 +50,9 @@ class QueueRepository(
         }
     }
 
-    suspend fun searchForPlayers(playerData: User, filter: HypixelData, gameType: GameType): List<Player>? {
+    suspend fun searchForPlayers(playerData: User, gameType: GameType): List<Player>? {
         val result = collection.aggregate<Queue>(
-            SearchQueueOptions(playerData, filter).pipeline.toList()
+            SearchQueueOptions(playerData).pipeline.toList()
         )
         return if(result.toList().size >= gameType.size - 1) {
             result.toList().slice(0 until gameType.size - 1).map {
@@ -65,10 +63,7 @@ class QueueRepository(
         }
     }
 
-    data class SearchQueueOptions(
-        val playerData: User,
-        val searchFilter: HypixelData
-    ) {
+    data class SearchQueueOptions(val playerData: User) {
         val pipeline: Array<Bson>
             get() {
                 val aggregation = arrayListOf<Bson>()
@@ -78,16 +73,8 @@ class QueueRepository(
                 }
 
                 if (playerData.hypixelData.bedwarsLevel != null) {
-                    if(searchFilter.bedwarsLevel == null) {
-                        aggregation.add(match(Queue::hypixelData / HypixelData::bedwarsLevel lte playerData.hypixelData.bedwarsLevel))
-                        aggregation.add(sort(descending(Queue::hypixelData / HypixelData::bedwarsLevel)))
-                    } else {
-                        aggregation.add(match(
-                            Queue::hypixelData / HypixelData::bedwarsLevel lte playerData.hypixelData.bedwarsLevel,
-                            Queue::hypixelData / HypixelData::bedwarsLevel gte searchFilter.bedwarsLevel
-                        ))
-                        aggregation.add(sort(descending(Queue::hypixelData / HypixelData::bedwarsLevel)))
-                    }
+                    aggregation.add(match(Queue::hypixelData / HypixelData::bedwarsLevel lte playerData.hypixelData.bedwarsLevel))
+                    aggregation.add(sort(descending(Queue::hypixelData / HypixelData::bedwarsLevel)))
                 }
 
                 return aggregation.toTypedArray()

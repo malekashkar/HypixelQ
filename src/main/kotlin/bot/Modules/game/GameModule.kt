@@ -7,6 +7,7 @@ import bot.Modules.game.events.EndGameEvent
 import bot.Modules.game.events.InviteReactionEvent
 import bot.Modules.game.events.LeaveQueueEvent
 import bot.Modules.game.events.QueueEvent
+import bot.Modules.game.tasks.TotalGamesLeaderboardTask
 import bot.Modules.game.tasks.UpdateStatsChannelsTask
 import net.dv8tion.jda.api.requests.GatewayIntent
 import java.util.*
@@ -35,7 +36,8 @@ class GameModule(bot: Bot): Module(
         InviteReactionEvent()
     ),
     arrayOf(
-        UpdateStatsChannelsTask()
+        UpdateStatsChannelsTask(),
+        TotalGamesLeaderboardTask()
     ),
     arrayOf(
         GatewayIntent.GUILD_MEMBERS,
