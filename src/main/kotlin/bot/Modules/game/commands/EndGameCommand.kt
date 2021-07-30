@@ -31,11 +31,27 @@ class EndGameCommand: Command() {
                         ).build()
                 ).queue()
             } else {
-                context.reply(
-                    EmbedTemplates
-                        .error("No game category found with the ID `$categoryId`.")
-                        .build()
-                ).queue()
+                val gameCategory = context.guild!!.getCategoryById(categoryId)
+                if(gameCategory != null) {
+                    for(channel in gameCategory.channels) {
+                        channel.delete().queue()
+                    }
+                    gameCategory.delete().queue()
+
+                    context.reply(
+                        EmbedTemplates
+                            .normal(
+                                "The game with ID `$categoryId` has been manually ended!",
+                                "Game Ended"
+                            ).build()
+                    ).queue()
+                } else {
+                    context.reply(
+                        EmbedTemplates
+                            .error("No game category found with the ID `$categoryId`.")
+                            .build()
+                    ).queue()
+                }
             }
         } else {
             context.reply(

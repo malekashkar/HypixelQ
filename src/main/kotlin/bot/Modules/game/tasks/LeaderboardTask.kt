@@ -21,7 +21,7 @@ class LeaderboardTask: Task() {
         if(
             now.dayOfWeek == DayOfWeek.MONDAY &&
             now.hour == 0 &&
-            now.minute == 0
+            (now.minute == 0 || now.minute == 1)
         ) {
             val guild = Bot.getMainGuild()
             if(guild != null) {

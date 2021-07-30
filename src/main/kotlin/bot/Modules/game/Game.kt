@@ -13,21 +13,34 @@ import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Guild
 
 object Game {
+    private fun getGameType(playerSize: Int): GameType {
+        return when(playerSize) {
+            2 -> GameType.DUOS
+            3 -> GameType.TRIOS
+            4 -> GameType.FOURS
+            else -> GameType.DUOS
+        }
+    }
+
     suspend fun createGame(
         guild: Guild,
         players: List<Player>
     ) {
         val members = players.map { guild.retrieveMemberById(it.playerId).await() }
 
-        var missingMember = false
+        val missingPlayers: MutableList<Player> = mutableListOf()
         for(member in members) {
-            if(member.voiceState == null) {
-                missingMember = true
-                Bot.database.queueRepository.deleteQueue(discordId = member.id)
+            if(member.voiceState != null && !member.voiceState!!.inVoiceChannel()) {
+                val player = players.find { it.playerId == member.id }
+                if(player != null) {
+                    println(member.id)
+                    missingPlayers.add(player)
+                    Bot.database.queueRepository.deleteQueue(discordId = player.playerId)
+                }
             }
         }
 
-        if(!missingMember && members.size == players.size) {
+        if(missingPlayers.isEmpty() && members.size == players.size) {
             val gamesCount = Bot.database.gameCollection.countDocuments() + 1
             val gameCategory = guild
                 .createCategory("[$gamesCount] Game Category")
@@ -78,11 +91,14 @@ object Game {
 
             gameText.sendMessage(
                 Message(
-                    members.map { it.asMention }.joinToString { "" },
+                    members.joinToString { it.asMention },
                     EmbedTemplates
                         .normal(
-                            "Welcome this is a guide",
-                            "Welcome to the game babes"
+                            "In this *text channel*, you will be able to run commands that are game specific and communicate with teammates that are not able to voice chat.\n" +
+                                    "In the *voice channel*, all members must stay active in order for the game to continue. Once all members leave the call, the game will be dis-activated.\n\n" +
+                                    "If all members do not leave the voice channel, the game will remain open. Please refrain from doing this if you are not currently playing with others.\n\n" +
+                                    "**Happy playing!**",
+                            "Welcome to your BedwarsQ Game"
                         )
                         .build()
                 )
@@ -98,6 +114,16 @@ object Game {
                 players
             )
         } else {
+            for(player in missingPlayers) {
+                val userData = Bot.database.userRepository.getUser(player.playerId)
+                Bot.database.queueRepository.createQueue(
+                    player,
+                    userData.hypixelData,
+                    userData.ignoredList,
+                    getGameType(players.size)
+                )
+            }
+
             val queueCommandsChannel = guild.getTextChannelById(Config.Channels.queueCommandsChannel)
             queueCommandsChannel?.sendMessageEmbeds(
                 EmbedTemplates

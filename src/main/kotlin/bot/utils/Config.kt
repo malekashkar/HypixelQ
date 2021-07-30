@@ -55,6 +55,7 @@ object Config {
     const val userStatsUpdateInt = 10_800_000L
     const val partyInviteExpire = 600_000L
     const val donatorsShoutoutCheckInt = 86_400_000L
+    const val closeInactiveGame = 120_000L
   }
 
   object Channels {

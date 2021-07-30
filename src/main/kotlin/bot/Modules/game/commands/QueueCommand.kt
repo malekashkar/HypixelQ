@@ -57,23 +57,23 @@ class QueueCommand: Command() {
                         if(gameType != null) {
                             val alreadyQueued = Bot.database.queueRepository.findQueue(context.author.id, null)
                             if(alreadyQueued == null) {
-                                val queuePlayers = Bot.database.queueRepository.searchForPlayers(userData, gameType)
-                                if(queuePlayers != null) {
-                                    Game.createGame(context.guild!!, queuePlayers)
+                                val playerSearch = Bot.database.queueRepository.searchForPlayers(userData, gameType)
+                                val queuePlayer = Player(false, member.id, userData.uuid)
+                                Bot.database.queueRepository.createQueue(
+                                    queuePlayer,
+                                    userData.hypixelData,
+                                    userData.ignoredList,
+                                    gameType
+                                )
+
+                                if(playerSearch != null) {
+                                    Game.createGame(context.guild!!, playerSearch)
                                 } else {
                                     context.reply(
                                         EmbedTemplates
                                             .error("We were unable to find a game instantly, you have been added to the queue!")
                                             .build()
                                     ).queue()
-
-                                    val queuePlayer = Player(false, member.id, userData.uuid)
-                                    Bot.database.queueRepository.createQueue(
-                                        queuePlayer,
-                                        userData.hypixelData,
-                                        userData.ignoredList,
-                                        gameType
-                                    )
                                 }
                             } else {
                                 context.reply(
