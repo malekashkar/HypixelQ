@@ -33,13 +33,13 @@ object Game {
             if(member.voiceState != null && !member.voiceState!!.inVoiceChannel()) {
                 val player = players.find { it.playerId == member.id }
                 if(player != null) {
-                    println(member.id)
                     missingPlayers.add(player)
                     Bot.database.queueRepository.deleteQueue(discordId = player.playerId)
                 }
             }
         }
 
+        val queueCommandsChannel = guild.getTextChannelById(Config.Channels.queueCommandsChannel)
         if(missingPlayers.isEmpty() && members.size == players.size) {
             val gamesCount = Bot.database.gameCollection.countDocuments() + 1
             val gameCategory = guild
@@ -113,18 +113,23 @@ object Game {
                 GameType.DUOS,
                 players
             )
+
+            queueCommandsChannel?.sendMessageEmbeds(
+                EmbedTemplates
+                    .normal("A game has been found for you!", "Game Found")
+                    .build()
+            )?.queue()
         } else {
             for(player in missingPlayers) {
                 val userData = Bot.database.userRepository.getUser(player.playerId)
                 Bot.database.queueRepository.createQueue(
                     player,
-                    userData.hypixelData,
+                    userData.score,
                     userData.ignoredList,
                     getGameType(players.size)
                 )
             }
 
-            val queueCommandsChannel = guild.getTextChannelById(Config.Channels.queueCommandsChannel)
             queueCommandsChannel?.sendMessageEmbeds(
                 EmbedTemplates
                     .error("One of the members of your queued game has disappeared!\n" +

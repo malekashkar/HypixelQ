@@ -2,6 +2,7 @@ package bot.utils.api
 
 import bot.Bot
 import bot.Core.database.models.HypixelData
+import bot.Core.database.models.Stats
 import bot.utils.Config
 import bot.utils.Json
 import io.ktor.client.request.*
@@ -11,7 +12,6 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import kotlin.math.floor
 import kotlin.math.round
-import kotlin.math.roundToInt
 
 object Hypixel {
     private const val HIGHEST_PRESTIGE = 10;
@@ -104,7 +104,7 @@ object Hypixel {
         }
     }
 
-    suspend fun getPlayerData(uuid: String): HypixelPlayerInfo? {
+    suspend fun getPlayerData(uuid: String): HypixelData? {
         val httpResponse = Bot.ktorClient.get<HttpResponse>("$root${Endpoint.Player.path}") {
             header("API-Key", System.getenv("HYPIXEL_TOKEN"))
             contentType(ContentType.Application.Json)
@@ -146,19 +146,18 @@ object Hypixel {
 
             val rank = (hypixelPlayer.jsonObject["newPackageRank"] as? JsonPrimitive)?.content
 
-            return HypixelPlayerInfo(
-                uuid,
-                playerDisplayName,
-                HypixelData(
-                    getFKDR(finalKills, finalDeaths),
-                    winstreak,
-                    getLevelForExp(bedwarsExperience),
+            if(playerDisplayName != null) {
+                return HypixelData(
                     playerDisplayName,
-                    rank
-                ),
-                discord,
-                rank
-            )
+                    rank,
+                    discord,
+                    Stats(
+                        getFKDR(finalKills, finalDeaths),
+                        winstreak,
+                        getLevelForExp(bedwarsExperience),
+                    )
+                )
+            }
         }
         return null
     }

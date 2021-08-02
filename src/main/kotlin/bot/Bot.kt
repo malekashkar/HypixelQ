@@ -1,5 +1,6 @@
 package bot
 
+import bot.Core.database.Cache
 import bot.Core.database.Database
 import bot.Core.structures.CommandHandler
 import bot.Core.structures.EmbedTemplates
@@ -38,7 +39,8 @@ object Bot {
         private val devEnv = System.getenv("DEV").equals("true", true)
         private val TOKEN = System.getenv("TOKEN")
 
-        val database: Database = Database()
+        val cache: Cache = Cache()
+        val database: Database = Database(cache)
         var modules = linkedMapOf<String, Module>()
 
         private var started = false

@@ -7,6 +7,7 @@ import bot.Core.structures.EmbedTemplates
 import bot.Core.structures.base.Command
 import bot.api.ICommandContext
 import bot.utils.api.Hypixel
+import bot.utils.api.Mojang
 import org.litote.kmongo.eq
 import org.litote.kmongo.set
 import org.litote.kmongo.setTo
@@ -22,8 +23,12 @@ class UpdateCommand: Command() {
             if(userData.lastUpdated < System.currentTimeMillis() - 3_600_000L) {
                 val hypixelData = Hypixel.getPlayerData(userData.uuid!!)
                 if (hypixelData != null) {
-                    userData.uuid = hypixelData.uuid
-                    userData.hypixelData = hypixelData.statsData
+                    val mojangProfile = Mojang.getMojangProfile(hypixelData.displayName!!)
+                    if(mojangProfile?.id != null) {
+                        userData.uuid = mojangProfile.id
+                    }
+
+                    userData.hypixel = hypixelData
                     bot.Modules.registration.User.updateUser(context.guild!!, userData)
 
                     context.reply(

@@ -25,10 +25,10 @@ class UpdateUsersTask: Task() {
             if(it.uuid != null) {
                 val data = Hypixel.getPlayerData(it.uuid!!)
                 if (data != null) {
-                    it.hypixelData = data.statsData
+                    it.hypixel = data
                     updates.add(updateOne(
                         User::id eq it.id,
-                        set(User::hypixelData setTo data.statsData)
+                        set(User::hypixel setTo data)
                     ))
                 }
 

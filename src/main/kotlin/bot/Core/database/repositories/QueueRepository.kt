@@ -13,14 +13,14 @@ class QueueRepository(
 ): Repository(database) {
     suspend fun createQueue(
         player: Player,
-        hypixelData: HypixelData,
+        score: Int,
         ignoredList: List<String>? = arrayListOf(),
         gameType: GameType
     ) {
         val queueData = Queue(
             player,
             gameType,
-            hypixelData,
+            score,
             ignoredList
         )
         collection.insertOne(queueData)
@@ -41,29 +41,52 @@ class QueueRepository(
         discordId: String? = null,
         playerUuid: String? = null
     ): Queue? {
-        if(discordId != null) {
-            return collection.findOne(Queue::player / Player::playerId eq discordId)
+        return if(discordId != null) {
+            collection.findOne(Queue::player / Player::playerId eq discordId)
         } else if(playerUuid != null) {
-            return collection.findOne(Queue::player / Player::playerUuid eq playerUuid)
-        } else {
-            return null
-        }
-    }
-
-    suspend fun searchForPlayers(playerData: User, gameType: GameType): List<Player>? {
-        val result = collection.aggregate<Queue>(
-            SearchQueueOptions(playerData).pipeline.toList()
-        )
-        return if(result.toList().size >= gameType.size - 1) {
-            result.toList().slice(0 until gameType.size - 1).map {
-                Player(it.player.leader, it.player.playerId, it.player.playerUuid)
-            }
+            collection.findOne(Queue::player / Player::playerUuid eq playerUuid)
         } else {
             null
         }
     }
 
-    data class SearchQueueOptions(val playerData: User) {
+    suspend fun searchForPlayers(playerData: User, gameType: GameType): MutableList<Player>? {
+        val lessResult = collection.aggregate<Queue>(
+            LessThanSearchQueue(playerData).pipeline.toList()
+        ).toList()
+        val greaterResult = collection.aggregate<Queue>(
+            GreaterThanSearchQueue(playerData).pipeline.toList()
+        ).toList()
+        val totalResults = greaterResult.size + lessResult.size
+
+        return if(totalResults >= gameType.size - 1) {
+            val foundPlayers: MutableList<Player> = mutableListOf()
+            for(i in 1 until gameType.size) {
+                if(lessResult.isNotEmpty() && greaterResult.isNotEmpty()) {
+                    val lessThanDifference = playerData.score - lessResult.first().score
+                    val greaterThanDifference = greaterResult.first().score - playerData.score
+                    if(lessThanDifference < greaterThanDifference) {
+                        foundPlayers.add(lessResult.first().player)
+                        lessResult.filter { it.player == lessResult.first().player }
+                    } else {
+                        foundPlayers.add(greaterResult.first().player)
+                        greaterResult.filter { it.player == greaterResult.first().player }
+                    }
+                } else if(lessResult.isNotEmpty()) {
+                    foundPlayers.add(lessResult.first().player)
+                    lessResult.filter { it.player == lessResult.first().player }
+                } else if(greaterResult.isNotEmpty()) {
+                    foundPlayers.add(greaterResult.first().player)
+                    greaterResult.filter { it.player == greaterResult.first().player }
+                }
+            }
+            foundPlayers
+        } else {
+            null
+        }
+    }
+
+    data class LessThanSearchQueue(val playerData: User) {
         val pipeline: Array<Bson>
             get() {
                 val aggregation = arrayListOf<Bson>()
@@ -72,10 +95,24 @@ class QueueRepository(
                     aggregation.add(match(Queue::player / Player::playerUuid nin playerData.ignoredList))
                 }
 
-                if (playerData.hypixelData.bedwarsLevel != null) {
-                    aggregation.add(match(Queue::hypixelData / HypixelData::bedwarsLevel lte playerData.hypixelData.bedwarsLevel))
-                    aggregation.add(sort(descending(Queue::hypixelData / HypixelData::bedwarsLevel)))
+                aggregation.add(match(Queue::score lte playerData.score))
+                aggregation.add(sort(descending(Queue::score)))
+
+                return aggregation.toTypedArray()
+            }
+    }
+
+    data class GreaterThanSearchQueue(val playerData: User) {
+        val pipeline: Array<Bson>
+            get() {
+                val aggregation = arrayListOf<Bson>()
+
+                if(playerData.ignoredList.isNotEmpty()) {
+                    aggregation.add(match(Queue::player / Player::playerUuid nin playerData.ignoredList))
                 }
+
+                aggregation.add(match(Queue::score gte playerData.score))
+                aggregation.add(sort(ascending(Queue::score)))
 
                 return aggregation.toTypedArray()
             }

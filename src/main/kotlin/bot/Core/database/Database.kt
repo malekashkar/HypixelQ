@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import org.litote.kmongo.reactivestreams.KMongo
 import java.util.concurrent.Executors
 
-class Database() {
+class Database(cache: Cache) {
     private val client: CoroutineClient
     val database: CoroutineDatabase
 
@@ -47,7 +47,7 @@ class Database() {
         configRepository = ConfigRepository(this, configCollection)
         archiveRepository = ArchiveRepository(this, archiveCollection)
         queueRepository = QueueRepository(this, queueCollection)
-        userRepository = UserRepository(this, userCollection)
+        userRepository = UserRepository(this, userCollection, cache.userMap)
         gameRepository = GameRepository(this, gameCollection)
         partyRepository = PartyRepository(this, partyCollection)
         partyInviteRepository = PartyInviteRepository(this, partyInviteCollection)

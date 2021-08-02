@@ -32,7 +32,7 @@ class ForceRegisterCommand: Command() {
             if(username != null && username.trim() != "") {
                 val mojangProfile = Mojang.getMojangProfile(username)
                 if(mojangProfile != null) {
-                    val userData = Bot.database.userRepository.getUser(mojangUuid = mojangProfile.id)
+                    val userData = Bot.database.userRepository.getUser(uuid = mojangProfile.id)
                     if(userData.id == null) {
                         userData.id = user.id
                         Bot.database.userRepository.updateId(userData, user.id)
@@ -41,10 +41,10 @@ class ForceRegisterCommand: Command() {
                         if(playerData != null) {
                             if(
                                 playerData.discordTag != null &&
-                                playerData.discordTag.lowercase() == user.asTag.lowercase()
+                                playerData.discordTag!!.lowercase() == user.asTag.lowercase()
                             ) {
-                                userData.uuid = playerData.uuid
-                                userData.hypixelData = playerData.statsData
+                                userData.uuid = mojangProfile.id
+                                userData.hypixel = playerData
                                 bot.Modules.registration.User.updateUser(context.guild!!, userData)
                                 context.reply(
                                     EmbedTemplates

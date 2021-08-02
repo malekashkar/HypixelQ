@@ -14,7 +14,6 @@ class GeneralModule(bot: Bot) : Module(
         MaintenanceCommand(),
         HelpCommand(),
         AutoRoleCommand(),
-        TestCommand(),
         ColorRolesCommand()
     ),
     arrayOf(

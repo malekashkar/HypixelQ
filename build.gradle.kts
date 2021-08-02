@@ -14,6 +14,7 @@ val jdaKtxVersion = "985db81"
 val kotlinxCoroutinesVersion = "1.5.0"
 val kotlinxSerializationJsonVersion = "1.1.0"
 val ktorVersion = "1.6.0"
+val redissonVersion = "3.15.5"
 val snakeYamlVersion = "1.28"
 
 repositories {
@@ -42,6 +43,8 @@ dependencies {
     implementation("org.litote.kmongo:kmongo:$kmongoVersion")
     implementation("org.litote.kmongo:kmongo-id-serialization:$kmongoVersion")
     implementation("org.litote.kmongo:kmongo-coroutine-serialization:$kmongoVersion")
+
+    implementation("org.redisson:redisson:$redissonVersion")
 
     implementation("org.yaml:snakeyaml:$snakeYamlVersion")
 

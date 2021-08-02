@@ -25,19 +25,16 @@ class RegisterCommand : Command() {
                 if(profile != null) {
                     var userData = context.getUserData()
                     if(userData.uuid != profile.id) {
-                        val uuidUserData = Bot.database.userRepository.getUser(mojangUuid = profile.id)
-                        if(uuidUserData.id == null && uuidUserData.id != context.author.id) {
-                            Bot.database.userRepository.updateId(userData, context.author.id)
+                        val uuidUserData = Bot.database.userRepository.getUser(uuid = profile.id)
+                        if(uuidUserData.id == null || uuidUserData.id != context.author.id && !uuidUserData._isNew) {
                             userData = uuidUserData
-                            userData._isNew = false
-                            userData.id = context.author.id
                         }
 
                         val playerData = Hypixel.getPlayerData(profile.id)
                         if(playerData != null) {
                             if(
                                 playerData.discordTag != null &&
-                                playerData.discordTag.lowercase() == context.author.asTag.lowercase()
+                                playerData.discordTag!!.lowercase() == context.author.asTag.lowercase()
                             ) {
                                 context.reply(
                                     EmbedTemplates
@@ -49,8 +46,13 @@ class RegisterCommand : Command() {
                                         .build()
                                 ).queue()
 
-                                userData.uuid = playerData.uuid
-                                userData.hypixelData = playerData.statsData
+                                Bot.database.userRepository.updateId(uuidUserData, context.author.id)
+
+                                userData._isNew = false
+                                userData.id = context.author.id
+                                userData.uuid = profile.id
+                                userData.hypixel = playerData
+
                                 User.updateUser(context.guild!!, userData)
                             } else {
                                 context.reply(

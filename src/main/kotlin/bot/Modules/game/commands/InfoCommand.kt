@@ -1,14 +1,14 @@
 package bot.Modules.game.commands
 
 import bot.Bot
-import bot.Core.database.models.HypixelData
+import bot.Core.database.models.User
 import bot.Core.structures.EmbedTemplates
 import bot.Core.structures.base.Command
 import bot.api.ICommandContext
 import bot.utils.api.Hypixel
 import bot.utils.api.Mojang
 import dev.minn.jda.ktx.await
-import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.entities.User as JDAUser
 
 class InfoCommand: Command() {
     override val name = "info"
@@ -18,60 +18,53 @@ class InfoCommand: Command() {
     @Executor
     suspend fun execute(
         context: ICommandContext,
-        @Argument(optional = true) user: User?,
+        @Argument(optional = true) user: JDAUser?,
         @Argument(optional = true) username: String?
     ) {
-        var hypixelData: HypixelData? = null
-        var discordUser: User? = null
-        var uuid: String? = null
-        var mcUsername: String? = null
+        var discordUser: JDAUser? = user
+        var userData: User? = null
 
         if(username != null) {
             val mojangProfile = Mojang.getMojangProfile(username)
             if(mojangProfile != null) {
-                uuid = mojangProfile.id
-                mcUsername = mojangProfile.name
-                val userData = Bot.database.userRepository.getUser(mojangUuid = mojangProfile.id)
+                userData = Bot.database.userRepository.getUser(uuid = mojangProfile.id)
                 if(userData.id != null) {
                     discordUser = context.jda.retrieveUserById(userData.id!!).await()
-                    hypixelData = userData.hypixelData
-                } else {
-                    val playerData = Hypixel.getPlayerData(mojangProfile.id)
-                    if(playerData != null) {
-                        hypixelData = playerData.statsData
+                }
+                if(userData.hypixel == null) {
+                    val hypixelData = Hypixel.getPlayerData(mojangProfile.id)
+                    if(hypixelData != null) {
+                        userData.hypixel = hypixelData
                         Bot.database.userRepository.updateUuid(userData, mojangProfile.id)
-                        Bot.database.userRepository.updateStats(userData, playerData.statsData)
+                        Bot.database.userRepository.updateHypixelData(userData, hypixelData)
                     }
                 }
             }
         } else if(user != null) {
-            val userData = Bot.database.userRepository.getUser(user.id)
-            if(userData.uuid != null) {
-                uuid = userData.uuid
-                mcUsername = Mojang.getCurrentName(userData.uuid!!)
-                discordUser = user
-                hypixelData = userData.hypixelData
-            }
+            userData = Bot.database.userRepository.getUser(user.id)
         } else {
-            val userData = context.getUserData()
-            if(userData.uuid != null) {
-                uuid = userData.uuid
-                mcUsername = Mojang.getCurrentName(userData.uuid!!)
-                discordUser = context.author
-                hypixelData = userData.hypixelData
+            userData = context.getUserData()
+            discordUser = context.author
+        }
+
+        if(userData?.hypixel == null && userData?.uuid != null) {
+            val hypixelData = Hypixel.getPlayerData(userData.uuid!!)
+            if(hypixelData != null) {
+                userData.hypixel = hypixelData
+                Bot.database.userRepository.updateHypixelData(userData, hypixelData)
             }
         }
 
-        if(hypixelData != null) {
+        if(userData?.hypixel != null) {
             context.reply(
                 EmbedTemplates
                     .empty()
                     .addField("Discord", discordUser?.asTag ?: "N/A", true)
-                    .addField("Username", mcUsername ?: "N/A", true)
-                    .addField("UUID", uuid ?: "N/A", true)
-                    .addField("FKDR", "%.2f".format(hypixelData.fkdr) , true)
-                    .addField("Bedwars Level", hypixelData.bedwarsLevel.toString(), true)
-                    .addField("Winstreak", hypixelData.winstreak.toString(), true)
+                    .addField("Username", userData.hypixel?.displayName ?: "N/A", true)
+                    .addField("UUID", userData.uuid ?: "N/A", true)
+                    .addField("FKDR", "%.2f".format(userData.hypixel?.stats?.fkdr) , true)
+                    .addField("Bedwars Level", userData.hypixel!!.stats?.level.toString(), true)
+                    .addField("Winstreak", userData.hypixel!!.stats?.winstreak.toString(), true)
                     .build()
             ).queue()
         } else {

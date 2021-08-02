@@ -1,17 +1,13 @@
 package bot.Modules.game.commands
 
 import bot.Bot
-import bot.Core.database.models.Archive
-import bot.Core.database.models.Player
 import bot.Core.database.models.User
 import bot.Core.structures.EmbedTemplates
 import bot.Core.structures.base.Command
 import bot.api.ICommandContext
 import bot.utils.EmbedPaginator
 import bot.utils.extensions.humanizeMs
-import bot.utils.extensions.humanizeMsDate
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.entities.MessageEmbed
 
 class HistoryCommand: Command() {
     override val name = "history"
@@ -21,29 +17,18 @@ class HistoryCommand: Command() {
         if(userData.uuid != null && userData.id != null) {
             val history = Bot.database.archiveRepository.getPlayerHistory(userData.id!!)
             if(history.isNotEmpty()) {
-                val playersData = history
-                    .flatMap { it.players }
-                    .map { Bot.database.userRepository.getUser(it.playerId) }
-                return history
-                    .chunked(5)
-                    .map { historyChunk ->
-                        val description: MutableList<String> = mutableListOf()
-                        historyChunk.forEach { archive ->
-                            val playersDescription: MutableList<String> = mutableListOf()
-                            archive.players.forEach { player ->
-                                playersDescription.add(
-                                    if(player.leader) {
-                                        ":star2: " + (playersData.find { data -> data.id == player.playerId }?.hypixelData?.displayName ?: "N/A")
-                                    } else {
-                                        playersData.find { data -> data.id == player.playerId }?.hypixelData?.displayName ?: "N/A"
-                                    }
-                                )
-                            }
-                            description.add("**Game Lasted ${archive.gameLength.humanizeMs()}**\n" + playersDescription.joinToString(", "))
+                return history.chunked(5).map { historyChunk ->
+                    val desc = historyChunk.map { archive ->
+                        val playersDesc = archive.players.mapNotNull { player ->
+                            val playerData = Bot.database.userRepository.getUser(player.playerId)
+                            if(playerData.hypixel?.displayName != null) {
+                                if(player.leader) ":star2: " else "" + playerData.hypixel?.displayName
+                            } else null
                         }
-                        EmbedTemplates
-                            .normal(description.joinToString("\n\n"), "Game History")
+                        "**Game Lasted ${archive.gameLength.humanizeMs()}**\n" + playersDesc.joinToString(", ")
                     }
+                    EmbedTemplates.normal(desc.joinToString("\n\n"), "Game History")
+                }
             }
         }
         return null
