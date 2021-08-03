@@ -13,6 +13,7 @@ class Cache {
     private val redissonClient: RedissonClient
 
     val userMap: RMapCacheAsync<String, String>
+    val settingMap: RMapCacheAsync<String, String>
 
     init {
         val nameMapper = RedissonNameMapper(System.getenv("REDIS_NAME_MAPPER"))
@@ -51,6 +52,7 @@ class Cache {
         }
 
         userMap = redissonClient.getMapCache("user")
+        settingMap = redissonClient.getMapCache("setting")
     }
 
     fun getUserLock(userId: String): RLock {

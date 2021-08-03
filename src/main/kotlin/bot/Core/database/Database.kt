@@ -22,6 +22,7 @@ class Database(cache: Cache) {
     val archiveCollection: CoroutineCollection<Archive>
     val partyCollection: CoroutineCollection<Party>
     val partyInviteCollection: CoroutineCollection<PartyInvite>
+    val settingCollection: CoroutineCollection<Setting>
 
     val configRepository: ConfigRepository
     val userRepository: UserRepository
@@ -30,6 +31,7 @@ class Database(cache: Cache) {
     val archiveRepository: ArchiveRepository
     val partyRepository: PartyRepository
     val partyInviteRepository: PartyInviteRepository
+    val settingRepository: SettingRepository
 
     init {
         val connectionString = ConnectionString(System.getenv("MONGO_URL") ?: "mongodb://localhost/bedwarsq")
@@ -43,6 +45,7 @@ class Database(cache: Cache) {
         userCollection = database.getCollection()
         partyCollection = database.getCollection()
         partyInviteCollection = database.getCollection()
+        settingCollection = database.getCollection()
 
         configRepository = ConfigRepository(this, configCollection)
         archiveRepository = ArchiveRepository(this, archiveCollection)
@@ -51,6 +54,7 @@ class Database(cache: Cache) {
         gameRepository = GameRepository(this, gameCollection)
         partyRepository = PartyRepository(this, partyCollection)
         partyInviteRepository = PartyInviteRepository(this, partyInviteCollection)
+        settingRepository = SettingRepository(this, settingCollection, cache.settingMap)
 
         CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher()).launch { createIndexes() }
     }
@@ -63,6 +67,7 @@ class Database(cache: Cache) {
         gameRepository.createIndexes()
         partyRepository.createIndexes()
         partyInviteRepository.createIndexes()
+        settingRepository.createIndexes()
     }
 
     suspend fun startSession(options: ClientSessionOptions? = null) =

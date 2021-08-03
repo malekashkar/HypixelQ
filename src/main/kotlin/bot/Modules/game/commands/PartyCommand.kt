@@ -112,21 +112,32 @@ class PartyCommand: ParentCommand() {
                                         .await()
 
                                     val userData = context.getUserData()
-                                    val leaderPlayer = Player(true, context.author.id, userData.uuid)
-                                    val invitedPlayer = Player(false, user.id, playerData.uuid!!)
-                                    Bot.database.partyRepository.createParty(mutableListOf(leaderPlayer))
-                                    Bot.database.partyInviteRepository.createInvite(
-                                        PartyInvite(inviteMessage.id, leaderPlayer, invitedPlayer)
-                                    )
+                                    if(userData.uuid != null) {
+                                        val leaderPlayer = Player(true, context.author.id, userData.uuid!!, userData.score)
+                                        val invitedPlayer = Player(false, user.id, playerData.uuid!!, playerData.score)
 
-                                    context.reply(
-                                        EmbedTemplates
-                                            .normal(
-                                                "${user.asMention} has been invited to your party",
-                                                "User Invited"
-                                            )
-                                            .build()
-                                    ).queue()
+                                        if(party == null) {
+                                            Bot.database.partyRepository.createParty(mutableListOf(leaderPlayer))
+                                        }
+                                        Bot.database.partyInviteRepository.createInvite(
+                                            PartyInvite(inviteMessage.id, leaderPlayer, invitedPlayer)
+                                        )
+
+                                        context.reply(
+                                            EmbedTemplates
+                                                .normal(
+                                                    "${user.asMention} has been invited to your party",
+                                                    "User Invited"
+                                                )
+                                                .build()
+                                        ).queue()
+                                    } else {
+                                        context.reply(
+                                            EmbedTemplates
+                                                .error("You must register before inviting players to your party!")
+                                                .build()
+                                        ).queue()
+                                    }
                                 } catch (err: Throwable) {
                                     println(err)
                                     context.reply(

@@ -6,6 +6,5 @@ import kotlinx.serialization.Serializable
 data class Queue (
     val player: Player,
     val gameType: GameType,
-    val score: Int,
     val ignoredList: List<String>? = arrayListOf(),
 )

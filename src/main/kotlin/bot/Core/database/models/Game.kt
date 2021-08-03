@@ -5,9 +5,12 @@ import org.bson.codecs.pojo.annotations.BsonId
 
 @Serializable
 data class Player(
-    var leader: Boolean = false,
     val playerId: String,
-    val playerUuid: String? = null
+    val playerUuid: String,
+    val score: Int,
+
+    val party: Boolean = false,
+    var leader: Boolean = false
 )
 
 @Serializable
@@ -19,10 +22,11 @@ enum class GameType(val size: Int) {
 
 @Serializable
 data class Game(
-    val categoryId: String,
     val type: GameType,
-    val players: List<Player>,
+    val players: MutableList<Player>,
 
+    var categoryId: String? = null,
     var createdAt: Long = System.currentTimeMillis(),
+
     var _isNew: Boolean = false
 )

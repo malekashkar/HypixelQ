@@ -58,14 +58,13 @@ class QueueCommand: Command() {
                             val alreadyQueued = Bot.database.queueRepository.findQueue(context.author.id, null)
                             if(alreadyQueued == null) {
                                 val playerSearch = Bot.database.queueRepository.searchForPlayers(userData, gameType)
-                                val queuePlayer = Player(false, member.id, userData.uuid)
+                                val queuePlayer = Player(false, member.id, userData.uuid!!, userData.score)
 
                                 playerSearch?.add(queuePlayer)
                                 Bot.database.queueRepository.createQueue(
                                     queuePlayer,
-                                    userData.score,
-                                    userData.ignoredList,
-                                    gameType
+                                    gameType,
+                                    userData.ignoredList
                                 )
 
                                 if(playerSearch != null) {

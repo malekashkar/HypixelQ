@@ -124,9 +124,8 @@ object Game {
                 val userData = Bot.database.userRepository.getUser(player.playerId)
                 Bot.database.queueRepository.createQueue(
                     player,
-                    userData.score,
-                    userData.ignoredList,
-                    getGameType(players.size)
+                    getGameType(players.size),
+                    userData.ignoredList
                 )
             }
 
